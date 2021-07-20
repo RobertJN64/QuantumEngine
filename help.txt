@@ -1,0 +1,26 @@
+#help
+Shows this information for other commands.
+
+#listcmds
+Lists all commands found in the help.txt file.
+
+#render
+Loads a circuit file, and displays it visually (defaults to matplotlib). Used for debugging circuit files.
+Takes one parameter, the file name. Defaults to /circuitfiles/
+ -t : render as text
+ -c : render as custom render (for interactivity)
+ -h : headless mode (useful for a full verification, but slow)
+
+#compile
+Takes a circuit.txt file and converts it to json.
+The first parameter specifies an input file. The second specifies an output file name (optional).
+
+#simulate
+Takes a circuit file and simulates it on the local computer. Gives histogram output.
+ -t only text output
+ -q bloch sphere
+
+#run
+Runs a circuit on the IBM system. Gives histogram output
+ -s uses a simulator instead of a real computer (if available)
+ -t only text output

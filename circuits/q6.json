@@ -1,0 +1,169 @@
+{
+    "rows": [
+        {
+            "gates": [
+                {
+                    "type": "h"
+                },
+                {
+                    "type": "multi"
+                },
+                {
+                    "type": "multi"
+                },
+                {
+                    "type": "multi"
+                },
+                {
+                    "type": "multi"
+                },
+                {
+                    "type": "multi"
+                },
+                {
+                    "type": "m"
+                }
+            ]
+        },
+        {
+            "gates": [
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "cx",
+                    "control": [
+                        0
+                    ]
+                },
+                {
+                    "type": "m"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                }
+            ]
+        },
+        {
+            "gates": [
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "cx",
+                    "control": [
+                        0
+                    ]
+                },
+                {
+                    "type": "m"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                }
+            ]
+        },
+        {
+            "gates": [
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "cx",
+                    "control": [
+                        0
+                    ]
+                },
+                {
+                    "type": "m"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                }
+            ]
+        },
+        {
+            "gates": [
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "cx",
+                    "control": [
+                        0
+                    ]
+                },
+                {
+                    "type": "m"
+                },
+                {
+                    "type": "empty"
+                }
+            ]
+        },
+        {
+            "gates": [
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "cx",
+                    "control": [
+                        0
+                    ]
+                },
+                {
+                    "type": "m"
+                }
+            ]
+        }
+    ]
+}

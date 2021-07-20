@@ -1,0 +1,25 @@
+{
+  "rows": [
+    {
+      "gates": [
+        {
+          "type": "h"
+        },
+        {
+          "type": "multi"
+        }
+      ]
+    },
+    {
+      "gates": [
+        {
+          "type": "empty"
+        },
+        {
+          "type": "cx",
+          "control": [0]
+        }
+      ]
+    }
+  ]
+}
