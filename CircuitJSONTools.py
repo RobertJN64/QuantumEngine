@@ -3,6 +3,44 @@ import json
 from errors import InternalCommandException
 from GateAssembler import addGate, verifyGate, validgates
 
+class Gate:
+    def __init__(self, gatestr: str, row, col):
+        self.parts = gatestr.split()
+        self.control = []
+        self.params = []
+        self.gatename = ""
+
+        passedGateName = False
+        for item in self.parts:
+            if item.isalpha():
+                if self.gatename != "":
+                    warnings.warn("Gate at (" + str(row) + "," + str(col) + ") can only have one name.")
+                    raise InternalCommandException
+                self.gatename = item
+                passedGateName = True
+            else:
+                try:
+                    if not passedGateName:
+                        self.control.append(round(float(item),6))
+                    else:
+                        self.params.append(round(float(item),6))
+                except ValueError:
+                    warnings.warn("Gate at (" + str(row) + "," + str(col) + ") has non float number.")
+                    raise InternalCommandException
+
+        if self.gatename == "":
+            warnings.warn("Gate at (" + str(row) + "," + str(col) + ") missing.")
+            raise InternalCommandException
+
+    def getJson(self):
+        d = {"type": self.gatename}
+        if len(self.control) > 0:
+            d["control"] = self.control
+        if len(self.params) > 0:
+            d["params"] = self.params
+        return d
+
+
 def loadjson(fname):
     """Loads a circuit file and returns it"""
     try:
@@ -117,7 +155,6 @@ def preassembleStages(circuitjson):
         print("----------------------------------")
     return circuits
 
-
 def compileCircuit(params):
     """Converts a txt file to a JSON file"""
     fnamein = params[0]
@@ -135,30 +172,22 @@ def compileCircuit(params):
         raise InternalCommandException
 
     for i in range(0, len(rawtext)):
-        rawtext[i] = rawtext[i].strip().replace(" ", "").replace("(", "").replace(")", "")
+        rawtext[i] = rawtext[i].strip()
 
     rawgatelist = []
     for line in rawtext:
         rawgatelist.append(line.split(','))
 
-    # TODO - more than 10 lines
     gatelist = []
-    for row in rawgatelist:
+    for rownum, row in enumerate(rawgatelist):
         gaterow = []
-        for gate in row:
-            gateinfo = ["", []]
-            for letter in gate:
-                if letter.isdigit():
-                    gateinfo[1].append(int(letter))
-                else:
-                    gateinfo[0] += letter
-            gaterow.append(gateinfo)
+        for colnum, gate in enumerate(row):
+            if len(gate) == 0:
+                gaterow.append({"type": "empty"})
+            else:
+                gate = Gate(gate, rownum, colnum)
+                gaterow.append(gate.getJson())
         gatelist.append(gaterow)
-
-    for row in gatelist:
-        for gate in row:
-            if gate[0] == "":
-                gate[0] = "empty"
 
     maxl = 0
     for row in gatelist:
@@ -166,35 +195,30 @@ def compileCircuit(params):
 
     for row in gatelist:
         for i in range(len(row), maxl):
-            row.append(["empty", []])
+            row.append({"type": "empty"})
 
-    for x in range(0, len(gatelist[0])):
-        for row in gatelist:
-            gate = row[x]
-            if len(gate[1]) > 0:
-                for item in gate[1]:
-                    if item >= len(gatelist):
-                        warnings.warn("Control requests at row " + str(item) + " col " + str(x) +
-                                      " is out of range.")
-                        raise InternalCommandException
-                    newgate = gatelist[item][x][0]
-                    if newgate != "empty":
-                        warnings.warn("Because of control requests, gate at row " + str(item) + " col " + str(x) +
-                                      " should be empty.")
-                        raise InternalCommandException
-                    else:
-                        gatelist[item][x] = ["multi", []]
+    for col in range(0, len(gatelist[0])):
+        for rownum, row in enumerate(gatelist):
+            gate = row[col]
+            control = gate.get("control", [])
+
+            for item in control:
+                if item >= len(gatelist):
+                    warnings.warn("Control requests at row " + str(rownum) + " col " + str(col) +
+                                  " is out of range.")
+                    raise InternalCommandException
+                controlgate = gatelist[item][col]["type"]
+                if controlgate != "empty":
+                    warnings.warn("Because of control requests, gate at row " + str(item) + " col " + str(col) +
+                                  " should be empty.")
+                    raise InternalCommandException
+                else:
+                    gatelist[item][col]["type"] = "multi"
 
     jsonrows = []
-    outjson = {"rows": jsonrows}
     for row in gatelist:
-        jsonrow = []
-        for gate in row:
-            gatejson = {"type": gate[0]}
-            if len(gate[1]) > 0:
-                gatejson["control"] = gate[1]
-            jsonrow.append(gatejson)
-        jsonrows.append({"gates": jsonrow})
+        jsonrows.append({"gates": row})
+    outjson = {"rows": jsonrows}
 
     validateJson(outjson)
 

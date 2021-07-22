@@ -1,6 +1,7 @@
 from qiskit import QuantumCircuit
 import warnings
 from errors import InternalCommandException
+from math import radians
 
 validgates = []
 singleparamgates = []
@@ -76,7 +77,6 @@ def verifyGate(gatejson, row, col, rowidtable):
 def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowidtable:list):
     gate = gatejson["type"]
 
-    params = gatejson.get("params", [])
     rcontrol = gatejson.get("control", [])
     control = []
     for item in rcontrol:
@@ -88,6 +88,11 @@ def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowidtable:li
             else:
                 warnings.warn("Gate at (" + str(row) + "," + str(col) + ") requesting invalid control.")
                 raise InternalCommandException
+
+    rparams = gatejson.get("params", [])
+    params = []
+    for param in rparams:
+        params.append(radians(param))
 
     if gate == "empty":
         pass
