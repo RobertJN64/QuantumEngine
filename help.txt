@@ -18,9 +18,9 @@ The first parameter specifies an input file. The second specifies an output file
 #simulate
 Takes a circuit file and simulates it on the local computer. Gives histogram output.
  -t only text output
- -q bloch sphere
+ -b show bloch sphere as well
 
 #run
-Runs a circuit on the IBM system. Gives histogram output
+Runs a circuit on the IBM system. Gives histogram output. (Bloch spehere is not available)
  -s uses a simulator instead of a real computer (if available)
  -t only text output

@@ -1,8 +1,7 @@
 import warnings
 import json
 from errors import InternalCommandException
-
-validgates = ["empty", "barrier", "multi", "h", "cx", "m"]
+from GateAssembler import addGate, verifyGate, validgates
 
 def loadjson(fname):
     """Loads a circuit file and returns it"""
@@ -80,9 +79,13 @@ def validateJson(circuitjson):
             warnings.warn("Error in parsing multigates on collumn " + str(x))
             raise InternalCommandException
 
+    for x in range(0, len(rows[0]["gates"])):
+        for index, row in enumerate(rows):
+            verifyGate(row["gates"][x], index, x, rowidtable)
+
     return True
 
-def assembleCircuit(circuitjson):
+def assembleCircuit(circuitjson, depth=0):
     """Returns a QuantumCircuit."""
     rows = circuitjson["rows"]
     rowidtable = []
@@ -95,37 +98,25 @@ def assembleCircuit(circuitjson):
     from qiskit import QuantumCircuit
     qc = QuantumCircuit(len(rows), len(rows))
 
-    for x in range(0, len(rows[0]["gates"])):
-        for index, row in enumerate(rows):
-            # print(row["gates"][x])
-            gate = row["gates"][x]["type"]
-            rcontrol = row["gates"][x].get("control", [])
-            control = []
-            for item in rcontrol:
-                if item in rowidtable:
-                    control.append(rowidtable.index(item))
-                else:
-                    if type(item) is int and item < len(rows):
-                        control.append(item)
-                    else:
-                        warnings.warn(
-                            "Gate in row " + str(index) + " at col " + str(x) + " requesting invalid control.")
-                        raise InternalCommandException
+    if depth == 0:
+        depth = len(rows[0]["gates"])
 
-            if gate == "empty" or gate == "multi":
-                pass
-            elif gate == "barrier":
-                qc.barrier(index)
-            elif gate == "h":
-                qc.h(index)
-            elif gate == "cx":
-                qc.cx(control, index)
-            elif gate == "m":
-                qc.measure(index, index)
-            else:
-                warnings.warn("Gate <" + str(gate) + "> not yet implemented.")
-                raise InternalCommandException
+    for x in range(0, depth):
+        for index, row in enumerate(rows):
+            addGate(qc, row["gates"][x], index, x, rowidtable)
     return qc
+
+def preassembleStages(circuitjson):
+    rows = circuitjson["rows"]
+    depth = len(rows[0]["gates"])
+    circuits = []
+    for i in range(1, depth):
+        circuits.append(assembleCircuit(circuitjson, i))
+    for c in circuits:
+        print(c.draw())
+        print("----------------------------------")
+    return circuits
+
 
 def compileCircuit(params):
     """Converts a txt file to a JSON file"""

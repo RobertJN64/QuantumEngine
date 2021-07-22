@@ -1,0 +1,13 @@
+{
+  "name": "Bell Circuit Part A",
+  "unlocked gates": {
+    "x": ["x"],
+    "y": ["y"],
+    "z": ["z"],
+    "h": ["h"],
+    "puzzle": ["puzzle"]
+  },
+  "min_lines": 1,
+  "max_lines": 2,
+  "start_lines": 1
+}

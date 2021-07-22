@@ -50,15 +50,20 @@ def main():
                 qcJSON.compileCircuit(params)
 
             elif cmd == "simulate":
-                verifyCMD(flags, ['-t', '-q'], params, 1, 1)
+                verifyCMD(flags, ['-t', '-b'], params, 1, 1)
                 circuitjson = qcJSON.loadjson(params[0])
                 qcJSON.validateJson(circuitjson)
                 qc = qcJSON.assembleCircuit(circuitjson)
-                result, statevector = qcSIMULATOR.simulate(qc)
-                qcSIMULATOR.visualize(result, qc, flags, sv=statevector)
+                result = qcSIMULATOR.simulate(qc)
+                qcSIMULATOR.visualize(result, qc, flags)
+
+            elif cmd == "preassemble":
+                circuitjson = qcJSON.loadjson(params[0])
+                qcJSON.validateJson(circuitjson)
+                qcJSON.preassembleStages(circuitjson)
 
             elif cmd == "run":
-                verifyCMD(flags, ['-s', '-t'], params, 1, 1)
+                verifyCMD(flags, ['-s', '-t', '-b'], params, 1, 1)
                 circuitjson = qcJSON.loadjson(params[0])
                 qcJSON.validateJson(circuitjson)
                 qc = qcJSON.assembleCircuit(circuitjson)
