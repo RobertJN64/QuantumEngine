@@ -43,7 +43,7 @@ def main():
                 circuitjson = qcJSON.loadjson(params[0])
                 qcJSON.validateJson(circuitjson)
                 qc = qcJSON.assembleCircuit(circuitjson)
-                qcRENDER.render(qc, flags)
+                qcRENDER.render(qc, circuitjson, flags)
 
             elif cmd == "compile":
                 verifyCMD(flags, [], params, 1, 2)

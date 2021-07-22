@@ -1,0 +1,49 @@
+[
+  {
+    "group": ["x", "rx", "cx", "crx", "mcrx", "ccx",
+             "y", "ry", "cy", "cry", "mcry",
+             "z", "rz", "cz", "crz", "mcrz"],
+    "background-color": [0,0,200],
+    "text-color": [200,200,200],
+    "text-style": "lastchar"
+  },
+  {
+    "group": ["u", "cu", "i"],
+    "background-color": [0,100,0],
+    "text-color": [200,200,200],
+    "text-style": "lastchar"
+  },
+  {
+    "group": ["h", "ch"],
+    "background-color": [200,0,0],
+    "text-color": [200,200,200],
+    "text-style": "lastchar"
+  },
+  {
+    "group": ["swap", "cswap"],
+    "background-color": [0,0,0],
+    "text-color": [200,200,200],
+    "text-style": "swap"
+  },
+  {
+    "group": ["reset"],
+    "background-color": [50,50,50],
+    "text-color": [200,200,200],
+    "text-style": "image",
+    "image": "reset.png"
+  },
+  {
+    "group": ["m"],
+    "background-color": [50,50,50],
+    "text-color": [200,200,200],
+    "text-style": "image",
+    "image": "measure.png"
+  },
+  {
+    "group": ["barrier"],
+    "background-color": [50,50,50],
+    "text-color": [200,200,200],
+    "text-style": "image",
+    "image": "barrier.png"
+  }
+]
