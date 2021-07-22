@@ -19,6 +19,19 @@ class PygameConfig:
             self.screenW = configjson["screen-size"][0]
             self.screenH = configjson["screen-size"][1]
 
+            self.leftWirePos = configjson["left-wire-pos"]
+            self.rightWirePos = configjson["right-wire-pos"]
+            self.wireWidth = configjson["wire-width"]
+            self.wireSpace = configjson["wire-space"]
+            self.wireEndHeight = configjson["wire-end-height"]
+            self.wireStartingY = configjson["wire-starting-y"]
+
+            self.gateSpacing = configjson["gate-spacing"]
+            self.gateSize = configjson["gate-size"]
+            self.imageSize = configjson["image-size"]
+            self.controlCircleRadius = configjson["control-circle-radius"]
+            self.controlWireThickness = configjson["control-wire-thickness"]
+
         except KeyError:
             warnings.warn("Malformed pygame config.")
             warnings.warn(traceback.format_exc())

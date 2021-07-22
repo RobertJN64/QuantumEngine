@@ -5,19 +5,22 @@
              "z", "rz", "cz", "crz", "mcrz"],
     "background-color": [0,0,200],
     "text-color": [200,200,200],
-    "text-style": "lastchar"
+    "text-style": "lastchar",
+    "text-size": 20
   },
   {
     "group": ["u", "cu", "i"],
     "background-color": [0,100,0],
     "text-color": [200,200,200],
-    "text-style": "lastchar"
+    "text-style": "lastchar",
+    "text-size": 20
   },
   {
     "group": ["h", "ch"],
     "background-color": [200,0,0],
     "text-color": [200,200,200],
-    "text-style": "lastchar"
+    "text-style": "lastchar",
+    "text-size": 20
   },
   {
     "group": ["swap", "cswap"],

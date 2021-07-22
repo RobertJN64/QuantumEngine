@@ -3,5 +3,18 @@
   "title-color": [0,0,0],
   "title-size": 30,
   "title-pos": [25,25],
-  "screen-size": [1000,600]
+  "screen-size": [1000,600],
+
+  "left-wire-pos": 50,
+  "right-wire-pos": 50,
+  "wire-width": 3,
+  "wire-space": 80,
+  "wire-end-height": 40,
+  "wire-starting-y": 100,
+
+  "gate-spacing": 70,
+  "gate-size": 50,
+  "image-size": 44,
+  "control-circle-radius": 10,
+  "control-wire-thickness": 5
 }

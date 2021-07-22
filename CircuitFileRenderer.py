@@ -21,7 +21,11 @@ def verifyGateGraphics():
                 raise InternalCommandException
             if group["text-style"] == "image":
                 if "image" not in group:
-                    warnings.warn("Group: " + str(group["group"]) + " missing image: " + str(key))
+                    warnings.warn("Group: " + str(group["group"]) + " missing image.")
+                    raise InternalCommandException
+            if group["text-style"] == "lastchar":
+                if "text-size" not in group:
+                    warnings.warn("Group: " + str(group["group"]) + " missing text size.")
                     raise InternalCommandException
     for gate in validgates:
         found = False
@@ -67,9 +71,15 @@ def drawCircuitToScreen(screen, circuitjson, title):
                             config.titlesize, config.titleColor, "topleft")
     rows = circuitjson["rows"]
     for i in range(0, len(rows)):
-        pygame.draw.line(screen, (0, 0, 0), (50, i * 100 + 100), (50, i * 100 + 150), 3)
-        pygame.draw.line(screen, (0, 0, 0), (config.screenW-50, i * 100 + 100), (config.screenW-50, i * 100 + 150), 3)
-        pygame.draw.line(screen, (0, 0, 0), (50, i * 100 + 125), (config.screenW - 50, i * 100 + 125), 3)
+        top = i * config.wireSpace + config.wireStartingY
+        mid = i * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
+        bottom = i * config.wireSpace + config.wireStartingY + config.wireEndHeight
+        left = config.leftWirePos
+        right = config.screenW - config.rightWirePos
+
+        pygame.draw.line(screen, (0, 0, 0), (left, top), (left, bottom), config.wireWidth)
+        pygame.draw.line(screen, (0, 0, 0), (right, top), (right, bottom), config.wireWidth)
+        pygame.draw.line(screen, (0, 0, 0), (left, mid), (right, mid), config.wireWidth)
 
     rowidtable = []
     for index, row in enumerate(rows):
@@ -80,14 +90,19 @@ def drawCircuitToScreen(screen, circuitjson, title):
 
     for rownum, row in enumerate(circuitjson["rows"]):
         for colnum, gatejson in enumerate(row["gates"]):
+            gatex = colnum * config.gateSpacing + config.leftWirePos + 35
+            gatey = rownum * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
+
             gate = gatejson["type"]
             if "control" in gatejson:
                 for rowid in gatejson["control"]:
                     if rowid in rowidtable:
-                        pass
+                        rowid = rowidtable.index(rowid)
+                    controly = rowid * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
+                    connectControl(screen, getGateColor(gate), gatex, gatey, controly)
 
             if gate not in ["empty", "multi"]:
-                drawGate(screen, gate, colnum * 70 + 85, rownum * 100 + 125)
+                drawGate(screen, gate, gatex, gatey)
 
 def drawGate(screen, name, x, y):
     gateconfig = {}
@@ -95,18 +110,26 @@ def drawGate(screen, name, x, y):
         if name in group["group"]:
             gateconfig = group
 
-    text = ""
     if gateconfig["text-style"] != "swap":
-        pygame.draw.rect(screen, gateconfig["background-color"], (x-25, y-25, 50, 50))
+        pygame.draw.rect(screen, gateconfig["background-color"],
+                         (x-config.gateSize/2, y-config.gateSize/2, config.gateSize, config.gateSize))
 
     if gateconfig["text-style"] == "lastchar":
         text = name[-1].upper()
-
-    PygameTools.displayText(screen, text, x, y, 20, gateconfig["text-color"])
+        PygameTools.displayText(screen, text, x, y, gateconfig["text-size"], gateconfig["text-color"])
 
     if gateconfig["text-style"] == "image":
         img = pygame.image.load("resources/" + gateconfig["image"])
-        img = pygame.transform.smoothscale(img, (44,44))
-        screen.blit(img, (x-22,y-22))
+        img = pygame.transform.smoothscale(img, (config.imageSize,config.imageSize))
+        screen.blit(img, (x - config.imageSize/2, y - config.imageSize/2))
 
-    #todo - images
+def getGateColor(gate):
+    gateconfig = {}
+    for group in gategraphics:
+        if gate in group["group"]:
+            gateconfig = group
+    return gateconfig["background-color"]
+
+def connectControl(screen, color, x, y1, y2):
+    pygame.draw.line(screen, color, (x, y1), (x, y2), config.controlWireThickness)
+    pygame.draw.circle(screen, color, (x, y2), config.controlCircleRadius)
