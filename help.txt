@@ -24,3 +24,6 @@ Takes a circuit file and simulates it on the local computer. Gives histogram out
 Runs a circuit on the IBM system. Gives histogram output. (Bloch spehere is not available)
  -s uses a simulator instead of a real computer (if available)
  -t only text output
+
+#editor
+Loads the circuit editor. Can edit existing files or create new ones.

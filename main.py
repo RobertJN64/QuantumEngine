@@ -40,8 +40,8 @@ def main():
 
             elif cmd == "render":
                 verifyCMD(flags, ["-t", "-c", "-h"], params, 1, 1)
-                circuitjson = qcJSON.loadjson(params[0])
-                qcJSON.validateJson(circuitjson)
+                circuitjson = qcJSON.loadJSON(params[0])
+                qcJSON.validateJSON(circuitjson)
                 qc = qcJSON.assembleCircuit(circuitjson)
                 qcRENDER.render(qc, circuitjson, flags)
 
@@ -51,24 +51,33 @@ def main():
 
             elif cmd == "simulate":
                 verifyCMD(flags, ['-t', '-b'], params, 1, 1)
-                circuitjson = qcJSON.loadjson(params[0])
-                qcJSON.validateJson(circuitjson)
+                circuitjson = qcJSON.loadJSON(params[0])
+                qcJSON.validateJSON(circuitjson)
                 qc = qcJSON.assembleCircuit(circuitjson)
                 result = qcSIMULATOR.simulate(qc)
                 qcSIMULATOR.visualize(result, qc, flags)
 
             elif cmd == "preassemble":
-                circuitjson = qcJSON.loadjson(params[0])
-                qcJSON.validateJson(circuitjson)
+                circuitjson = qcJSON.loadJSON(params[0])
+                qcJSON.validateJSON(circuitjson)
                 qcJSON.preassembleStages(circuitjson)
 
             elif cmd == "run":
                 verifyCMD(flags, ['-s', '-t', '-b'], params, 1, 1)
-                circuitjson = qcJSON.loadjson(params[0])
-                qcJSON.validateJson(circuitjson)
+                circuitjson = qcJSON.loadJSON(params[0])
+                qcJSON.validateJSON(circuitjson)
                 qc = qcJSON.assembleCircuit(circuitjson)
                 result = qcSIMULATOR.sendToIBM(qc, useSimulator=('-s' in flags))
                 qcSIMULATOR.visualize(result, qc, flags)
+
+            elif cmd == "editor":
+                verifyCMD(flags, [], params, 0, 1)
+                if len(params) > 0:
+                    circuitjson = qcJSON.loadJSON(params[0])
+                    qcJSON.validateJSON(circuitjson)
+                else:
+                    circuitjson = {"rows": [{"gates": []}]}
+                qcRENDER.editor(circuitjson)
 
             else:
                 raise CommandNotFoundError(cmd)

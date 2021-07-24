@@ -23,6 +23,14 @@
     "text-size": 20
   },
   {
+    "group": ["puzzle"],
+    "background-color": [150,150,150],
+    "text-color": [200,200,200],
+    "text-style": "raw",
+    "text": "?",
+    "text-size": 20
+  },
+  {
     "group": ["swap", "cswap"],
     "background-color": [0,0,0],
     "text-color": [200,200,200],
@@ -44,9 +52,8 @@
   },
   {
     "group": ["barrier"],
-    "background-color": [50,50,50],
+    "background-color": [0,0,0],
     "text-color": [200,200,200],
-    "text-style": "image",
-    "image": "barrier.png"
+    "text-style": "barrier"
   }
 ]

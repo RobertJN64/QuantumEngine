@@ -16,5 +16,14 @@
   "gate-size": 50,
   "image-size": 44,
   "control-circle-radius": 10,
-  "control-wire-thickness": 5
+  "control-wire-thickness": 5,
+
+  "toolbox-thickness": 3,
+  "toolbox-spacer-thickness": 3,
+  "toolbox-color": [0,0,0],
+  "toolbox-offground": 25,
+
+  "tool-background": [100,100,0],
+
+  "swap-tool-line-len": 8
 }

@@ -32,12 +32,32 @@ class PygameConfig:
             self.controlCircleRadius = configjson["control-circle-radius"]
             self.controlWireThickness = configjson["control-wire-thickness"]
 
+            self.toolboxThickness = configjson["toolbox-thickness"]
+            self.toolboxSpacerThickness = configjson["toolbox-spacer-thickness"]
+            self.toolboxColor = configjson["toolbox-color"]
+            self.toolboxOffGround = configjson["toolbox-offground"]
+
+            self.toolBackgroundColor = configjson["tool-background"]
+            self.swapToolLineLen = configjson["swap-tool-line-len"]
+
         except KeyError:
             warnings.warn("Malformed pygame config.")
             warnings.warn(traceback.format_exc())
             raise InternalCommandException
 
 config = PygameConfig(c)
+
+class ClickLocation:
+    def __init__(self, x, y, w, h, target):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.target = target
+
+    def checkClick(self, x, y):
+        return self.x < x < self.x + self.h and self.y < y < self.y + self.h
+
 
 def createPygameWindow():
     pygame.display.set_icon(pygame.image.load('resources/qc_icon.ico'))

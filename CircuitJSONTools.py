@@ -3,6 +3,8 @@ import json
 from errors import InternalCommandException
 from GateAssembler import addGate, verifyGate, validgates
 
+#TODO - handle control wire overlap
+
 class Gate:
     def __init__(self, gatestr: str, row, col):
         self.parts = gatestr.split()
@@ -40,8 +42,7 @@ class Gate:
             d["params"] = self.params
         return d
 
-
-def loadjson(fname):
+def loadJSON(fname):
     """Loads a circuit file and returns it"""
     try:
         with open("circuits/" + fname + ".json") as f:
@@ -53,7 +54,12 @@ def loadjson(fname):
 
     return circuitjson
 
-def validateJson(circuitjson):
+def saveJSON(circuitjson, fname):
+    """Saves a circuit file"""
+    with open("circuits/" + fname + ".json", "w+") as f:
+        json.dump(circuitjson, f, indent=2)
+
+def validateJSON(circuitjson):
     """Loads JSON and warns if there are any errors."""
     if "rows" not in circuitjson or len(circuitjson["rows"]) == 0:
         warnings.warn("Malformed file. Missing rows.")
@@ -122,6 +128,47 @@ def validateJson(circuitjson):
             verifyGate(row["gates"][x], index, x, rowidtable)
 
     return True
+
+def refactorJSON(circuitjson):
+    madechange = False
+
+    rows = circuitjson["rows"]
+    removecols = []
+    depth = len(rows[0]["gates"])
+    for col in range(0, depth):
+        allempty = True
+        for index, row in enumerate(rows):
+            gatejson = row["gates"][col]
+            gate = gatejson["type"]
+
+            if gate != "empty":
+                allempty = False
+
+        if allempty:
+            removecols.append(col)
+
+    removecols.reverse()
+
+    for col in removecols:
+        for row in rows:
+            row.pop(col)
+            madechange = True
+
+    if depth > 1:
+        for col in range(1, depth):
+            for index, row in enumerate(rows):
+                gateajson = row["gates"][col-1]
+                gatebjson = row["gates"][col]
+
+                if gateajson["type"] == "empty" and len(gatebjson["controls"]) == 0:
+                    row["gates"][col-1] = gatebjson
+                    row["gates"][col] = gateajson
+                    madechange = True
+
+    if madechange:
+        return refactorJSON(circuitjson) #recursion
+    else:
+        return circuitjson
 
 def assembleCircuit(circuitjson, depth=0):
     """Returns a QuantumCircuit."""
@@ -220,7 +267,7 @@ def compileCircuit(params):
         jsonrows.append({"gates": row})
     outjson = {"rows": jsonrows}
 
-    validateJson(outjson)
+    validateJSON(outjson)
 
     with open("circuits/" + fnameout + ".json", "w+") as f:
         json.dump(outjson, f, indent=4)

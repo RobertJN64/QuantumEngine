@@ -15,7 +15,7 @@ coremodifiers = ["", "c", "r", "cr", "mcr"]
 universalgates = ["u", "cu"]
 specialgates = ["ccx", "h", "ch", "i"]
 othergates = ["swap", "cswap", "barrier", "reset"]
-customgates = ["empty", "multi", "m"]  # TODO - if gate
+customgates = ["empty", "multi", "m", "puzzle"]  # TODO - if gate
 for p in pauligates:
     for mod in coremodifiers:
         validgates.append(mod + p)
@@ -158,6 +158,9 @@ def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowidtable:li
         qc.swap(control[0], row)
     elif gate == "cswap":
         qc.cswap(control[0], control[1], row)
+
+    elif gate == "puzzle":
+        qc.i(row)
 
 
     else:
