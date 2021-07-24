@@ -24,6 +24,7 @@
   "toolbox-offground": 25,
 
   "tool-background": [100,100,0],
+  "swap-tool-line-len": 8,
 
-  "swap-tool-line-len": 8
+  "gate-drop-color": [100,200,0]
 }

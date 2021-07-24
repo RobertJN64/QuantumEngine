@@ -40,6 +40,8 @@ class PygameConfig:
             self.toolBackgroundColor = configjson["tool-background"]
             self.swapToolLineLen = configjson["swap-tool-line-len"]
 
+            self.gateDropColor = configjson["gate-drop-color"]
+
         except KeyError:
             warnings.warn("Malformed pygame config.")
             warnings.warn(traceback.format_exc())
@@ -47,13 +49,21 @@ class PygameConfig:
 
 config = PygameConfig(c)
 
+class ClickMode:
+    Empty = 0,
+    AddGate = 1,
+    MoveGate = 2,
+    AddControl = 3,
+    DeleteGate = 4
+
 class ClickLocation:
-    def __init__(self, x, y, w, h, target):
+    def __init__(self, x, y, w, h, target, mode):
         self.x = x
         self.y = y
         self.w = w
         self.h = h
         self.target = target
+        self.mode = mode
 
     def checkClick(self, x, y):
         return self.x < x < self.x + self.h and self.y < y < self.y + self.h

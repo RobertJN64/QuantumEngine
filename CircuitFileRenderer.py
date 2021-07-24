@@ -1,13 +1,18 @@
 import matplotlib.pyplot as pyplot
 import PygameTools
-from PygameTools import config
+from PygameTools import config, ClickMode
 from errors import InternalCommandException
-from CircuitJSONTools import validgates
+from CircuitJSONTools import validgates, refactorJSON
+from GateAssembler import updateGate
 import warnings
 import pygame
 import json
 
 #TODO - draw parameters
+#TODO - swap
+#TODO - better drop location tracking
+#TODO - add remove rows
+#TODO - scrolling
 
 with open("resources/gategraphics.json") as f:
     gategraphics = json.load(f)
@@ -59,6 +64,7 @@ verifyGateGraphics()
 
 clickLocations = []
 hand = ""
+handmode = ClickMode.Empty
 
 def render(qc, qcjson, flags):
     if '-h' in flags:
@@ -91,6 +97,7 @@ def runDisplayLoop(circuitjson):
 def editor(circuitjson):
     global clickLocations
     global hand
+    global handmode
     screen = PygameTools.createPygameWindow()
     done = False
     clock = pygame.time.Clock()
@@ -98,10 +105,34 @@ def editor(circuitjson):
         screen.fill(config.screenColor)
         drawCircuitToScreen(screen, circuitjson, "Custom Circuit Render")
         drawGateToolbox(screen, [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]], ["control", "delete"])
+
+        #region drag and drop
         x, y = pygame.mouse.get_pos()
         if hand != "":
-            drawGate(screen, hand, x, y)
-            print(getGateDropPos(x, y, len(circuitjson["rows"]), 40))
+            if handmode == ClickMode.AddGate:
+                drawGate(screen, hand, x, y)
+                row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
+                if (row is not None) and (col is not None):
+                    if col == "end":
+                        depth = len(circuitjson["rows"][row]["gates"])
+                        drawDropBox(screen, row, depth, "box")
+
+                    elif circuitjson["rows"][row]["gates"][col]["type"] == "empty":
+                        drawDropBox(screen, row, col, "box")
+
+                    else:
+                        if col > 0 and circuitjson["rows"][row]["gates"][col-1]["type"] == "empty":
+                            drawDropBox(screen, row, col-1, "box")
+                        else:
+                            drawDropBox(screen, row, col, "line")
+
+            elif handmode == ClickMode.DeleteGate:
+                screen.blit(images["delete"], (x - config.imageSize/2, y - config.imageSize/2))
+                row, col = getDeletePos(x, y, circuitjson, config.gateSize)
+                if row is not None and col is not None and col != "end":
+                    drawDropBox(screen, row, col, "box")
+
+        #endregion
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
         pygame.display.update()
         clock.tick(30)
@@ -113,12 +144,42 @@ def editor(circuitjson):
                 if event.button == 1: #left click:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
-                            hand = clickLoc.target
+                            handmode = clickLoc.mode
+                            if clickLoc.mode == ClickMode.AddGate:
+                                hand = clickLoc.target
+                            if clickLoc.mode == ClickMode.DeleteGate:
+                                hand = "delete"
+
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
+                    if hand != "":
+                        if handmode == ClickMode.AddGate:
+                            row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
+                            addGate(circuitjson, hand, row, col)
+                            circuitjson = refactorJSON(circuitjson)
+                        elif handmode == ClickMode.DeleteGate:
+                            row, col = getDeletePos(x, y, circuitjson, config.gateSize)
+                            deleteGate(circuitjson, row, col)
+                            circuitjson = refactorJSON(circuitjson)
                     hand = ""
+                    handmode = ClickMode.Empty
 
     pygame.display.quit()
+
+def drawDropBox(screen, row, col, t):
+    gatex = col * config.gateSpacing + config.leftWirePos + config.gateSpacing / 2 + 10
+    gatey = row * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
+    if t == "box":
+        pygame.draw.rect(screen, config.gateDropColor,
+                         (gatex - config.gateSize / 2, gatey - config.gateSize / 2, config.gateSize,
+                          config.gateSize), width=2)
+    elif t == "line":
+        pygame.draw.line(screen, config.gateDropColor,
+                         (gatex - config.gateSpacing / 2 ,gatey + 0.5 * config.gateSize),
+                         (gatex - config.gateSpacing / 2, gatey - 0.5 * config.gateSize), 3)
+    else:
+        warnings.warn("Unexpected drop box type.")
+        raise InternalCommandException
 
 def drawCircuitToScreen(screen, circuitjson, title):
     PygameTools.displayText(screen, title, config.titlepos[0], config.titlepos[0],
@@ -135,23 +196,15 @@ def drawCircuitToScreen(screen, circuitjson, title):
         pygame.draw.line(screen, (0, 0, 0), (right, top), (right, bottom), config.wireWidth)
         pygame.draw.line(screen, (0, 0, 0), (left, mid), (right, mid), config.wireWidth)
 
-    rowidtable = []
-    for index, row in enumerate(rows):
-        if "id" in row:
-            rowidtable.append(row["id"])
-        else:
-            rowidtable.append(index)
 
     for rownum, row in enumerate(circuitjson["rows"]):
         for colnum, gatejson in enumerate(row["gates"]):
-            gatex = colnum * config.gateSpacing + config.leftWirePos + 35
+            gatex = colnum * config.gateSpacing + config.leftWirePos + config.gateSpacing / 2 + 10
             gatey = rownum * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
 
             gate = gatejson["type"]
             if "control" in gatejson:
                 for rowid in gatejson["control"]:
-                    if rowid in rowidtable:
-                        rowid = rowidtable.index(rowid)
                     controly = rowid * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
                     connectControl(screen, getGateColor(gate), gatex, gatey, controly)
 
@@ -250,7 +303,7 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
             drawGate(screen, gate, gatepos, midy)
             clickLocations.append(
                 PygameTools.ClickLocation(gatepos-config.gateSize/2, midy-config.gateSize/2,
-                                          config.gateSize, config.gateSize, gate))
+                                          config.gateSize, config.gateSize, gate, ClickMode.AddGate))
             gatepos += config.gateSpacing
         pygame.draw.line(screen, config.toolboxColor, (gatepos-gatemargin,topy), (gatepos-gatemargin,bottomy),
                          config.toolboxThickness)
@@ -258,12 +311,17 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
     gatepos += gatemargin
     for gate in allowedtools:
         drawTool(screen, gate, gatepos, midy)
+        if gate == "delete":
+            clickLocations.append(
+                PygameTools.ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
+                                          config.gateSize, config.gateSize, gate, ClickMode.DeleteGate))
         gatepos += config.gateSpacing
 
-def getGateDropPos(x, y, rownum, mindistance):
+def getGateDropPos(x, y, circuitjson, mindistance):
     ypos = config.wireStartingY + config.wireEndHeight * 0.5
     row = None
     distance = 0
+    rownum = len(circuitjson["rows"])
     for i in range(0, rownum):
         dis = abs(y - ypos)
         if dis < mindistance:
@@ -275,6 +333,113 @@ def getGateDropPos(x, y, rownum, mindistance):
                     row = i
         ypos += config.wireSpace
 
-    #TODO - get x pos as well
+    col = None
+    distance = 0
+    if row is not None:
+        xpos = config.leftWirePos
+        for i in range(0, len(circuitjson["rows"][row]["gates"])):
+            dis = abs(x - xpos)
+            if dis < mindistance:
+                if col is None:
+                    col = i
+                    distance = dis
+                else:
+                    if dis < distance:
+                        col = i
+            xpos += config.gateSpacing
 
-    return row
+        if x > xpos - config.gateSize and col is None:
+            col = "end"
+
+    return row, col
+
+def getDeletePos(x, y, circuitjson, mindistance):
+    ypos = config.wireStartingY + config.wireEndHeight * 0.5
+    row = None
+    distance = 0
+    rownum = len(circuitjson["rows"])
+    for i in range(0, rownum):
+        dis = abs(y - ypos)
+        if dis < mindistance:
+            if row is None:
+                row = i
+                distance = dis
+            else:
+                if dis < distance:
+                    row = i
+        ypos += config.wireSpace
+
+    col = None
+    distance = 0
+    if row is not None:
+        xpos = config.leftWirePos + config.gateSpacing/2 + 10
+        for i in range(0, len(circuitjson["rows"][row]["gates"])):
+            dis = abs(x - xpos)
+            if dis < mindistance:
+                if col is None:
+                    col = i
+                    distance = dis
+                else:
+                    if dis < distance:
+                        col = i
+            xpos += config.gateSpacing
+
+    if row is not None and col is not None:
+        if circuitjson["rows"][row]["gates"][col]["type"] == "empty":
+            row = None
+            col = None
+
+    return row, col
+
+def addGate(circuitjson, gate, rownum, colnum):
+    if (rownum is not None) and (colnum is not None):
+        if colnum == "end":
+            for index, row in enumerate(circuitjson["rows"]):
+                if index == rownum:
+                    row["gates"].append({"type": gate})
+                else:
+                    row["gates"].append({"type": "empty"})
+
+        elif circuitjson["rows"][rownum]["gates"][colnum]["type"] == "empty":
+            circuitjson["rows"][rownum]["gates"][colnum]["type"] = gate
+
+        else:
+            if colnum > 0 and circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] == "empty":
+                circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] = gate
+            else:
+                for index, row in enumerate(circuitjson["rows"]):
+                    if index == rownum:
+                        row["gates"].insert(colnum, {"type": gate})
+                    else:
+                        row["gates"].insert(colnum, {"type": "empty"})
+
+def deleteGate(circuitjson, rownum, colnum):
+    if (rownum is not None) and (colnum is not None):
+        gatejson = circuitjson["rows"][rownum]["gates"][colnum]
+
+        if gatejson["type"] == "empty":
+            warnings.warn("Deleting empty gate!")
+            raise InternalCommandException
+
+        if gatejson["type"] == "multi":
+            for row in circuitjson["rows"]:
+                gatejsonb = row["gates"][colnum]
+                control = gatejsonb.get("control", [])
+                if rownum in control:
+                    control.remove(rownum)
+                row["gates"][colnum] = updateGate(gatejsonb)
+            gatejson["type"] = "empty"
+
+        elif len(gatejson.get("control", [])) == 0:
+            circuitjson["rows"][rownum]["gates"][colnum]["type"] = "empty"
+            circuitjson["rows"][rownum]["gates"][colnum] = updateGate(gatejson)
+
+        elif len(gatejson.get("control", [])) > 0:
+            for item in gatejson["control"]:
+                circuitjson["rows"][item]["gates"][colnum]["type"] = "empty"
+            circuitjson["rows"][rownum]["gates"][colnum]["type"] = "empty"
+            circuitjson["rows"][rownum]["gates"][colnum] = updateGate(gatejson)
+
+        else:
+            warnings.warn("Unexpected format for gatejson: " + str(gatejson))
+            raise InternalCommandException

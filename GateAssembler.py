@@ -28,14 +28,13 @@ for p in pauligates:
         if "r" in mod:
             singleparamgates.append(mod + p)
 
-
 validgates += universalgates + specialgates + othergates + customgates
 controlgates += ["cu", "swap"]
 doublecontrolgates += ["ccx", "cswap"]
 tripleparamsgates += ["u", "cu"]
 
 
-def verifyGate(gatejson, row, col, rowidtable):
+def verifyGate(gatejson, row, col, rowcount):
     gate = gatejson["type"]
 
     # region validate gates
@@ -44,17 +43,13 @@ def verifyGate(gatejson, row, col, rowidtable):
             warnings.warn("Gate at (" + str(row) + "," + str(col) + ") has control but is missing control in json.")
             raise InternalCommandException
 
-        rcontrol = gatejson["control"]
-        control = []
-        for item in rcontrol:
-            if item in rowidtable:
-                control.append(rowidtable.index(item))
+        control = gatejson["control"]
+        for item in control:
+            if type(item) is int and item < rowcount:
+                pass
             else:
-                if type(item) is int and item < len(rowidtable):
-                    control.append(item)
-                else:
-                    warnings.warn("Gate at (" + str(row) + "," + str(col) + ") requesting invalid control.")
-                    raise InternalCommandException
+                warnings.warn("Gate at (" + str(row) + "," + str(col) + ") requesting invalid control.")
+                raise InternalCommandException
 
         if ((gate in controlgates and len(control) != 1) or (gate in doublecontrolgates and len(control) != 2) or
                 (gate in multicontrolgates and len(control) == 0)):
@@ -73,21 +68,17 @@ def verifyGate(gatejson, row, col, rowidtable):
                 raise InternalCommandException
     # endregion
 
-
-def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowidtable:list):
+def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowcount:int):
     gate = gatejson["type"]
 
-    rcontrol = gatejson.get("control", [])
-    control = []
-    for item in rcontrol:
-        if item in rowidtable:
-            control.append(rowidtable.index(item))
+    control = gatejson.get("control", [])
+
+    for item in control:
+        if type(item) is int and item < rowcount:
+            pass
         else:
-            if type(item) is int and item < len(rowidtable):
-                control.append(item)
-            else:
-                warnings.warn("Gate at (" + str(row) + "," + str(col) + ") requesting invalid control.")
-                raise InternalCommandException
+            warnings.warn("Gate at (" + str(row) + "," + str(col) + ") requesting invalid control.")
+            raise InternalCommandException
 
     rparams = gatejson.get("params", [])
     params = []
@@ -166,3 +157,49 @@ def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowidtable:li
     else:
         warnings.warn("Gate <" + str(gate) + "> not yet implemented.")
         raise InternalCommandException
+
+def updateGate(gatejson):
+    t = gatejson["type"]
+    if t in ["swap", "cswap", "barrier", "reset", "multi", "m", "i", "puzzle"]:
+        warnings.warn("Error updating gate type: " + str(t))
+        raise InternalCommandException
+
+    if t == "empty":
+        if "control" in gatejson:
+            gatejson["control"] = []
+        if "params" in gatejson:
+            gatejson["params"] = []
+        return gatejson
+
+    control = gatejson.get("control", [])
+    params = gatejson.get("params", [])
+
+    if "u" in t:
+        if len(control) == 1:
+            gatejson["type"] = "cu"
+        else:
+            gatejson["type"] = "u"
+
+    elif "h" in t:
+        if len(control) == 1:
+            gatejson["type"] = "ch"
+        else:
+            gatejson["type"] = "h"
+
+    elif len(params) == 0 and "x" in t and len(control) == 2:
+        gatejson["type"] = "ccx"
+
+    else:
+        t = t[:-1]
+        if t not in "x, y, z":
+            warnings.warn("Error updating gate type: " + str(t))
+            raise InternalCommandException
+
+        if len(params) > 0:
+            t = "r" + t
+        if len(control) == 1:
+            t = "c" + t
+        if len(control) > 1:
+            t = "mc" + t
+        gatejson["type"] = t
+    return gatejson
