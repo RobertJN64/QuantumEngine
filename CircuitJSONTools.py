@@ -124,6 +124,14 @@ def refactorJSON(circuitjson):
     madechange = False
     #print(circuitjson)
     rows = circuitjson["rows"]
+
+    targetlen = len(rows[0]["gates"])
+    for row in rows:
+        if len(row["gates"]) != targetlen:
+            print(circuitjson)
+            warnings.warn("Circuit json length error.")
+            raise InternalCommandException
+
     removecols = []
     depth = len(rows[0]["gates"])
     for col in range(0, depth):

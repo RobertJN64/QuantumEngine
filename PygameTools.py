@@ -54,7 +54,8 @@ class ClickMode:
     AddGate = 1,
     MoveGate = 2,
     AddControl = 3,
-    DeleteGate = 4
+    DeleteGate = 4,
+    AddRow = 5
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):
@@ -72,7 +73,7 @@ class ClickLocation:
 def createPygameWindow():
     pygame.display.set_icon(pygame.image.load('resources/qc_icon.ico'))
     pygame.display.set_caption("QC Circuit Render")
-    screen = pygame.display.set_mode((config.screenW, config.screenH))
+    screen = pygame.display.set_mode((config.screenW, config.screenH), pygame.RESIZABLE)
     return screen
 
 def displayText(screen, text, x, y, size, color, mode="center"):

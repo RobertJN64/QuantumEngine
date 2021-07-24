@@ -13,15 +13,18 @@ import json
 #TODO - better drop location tracking
 #TODO - add remove rows
 #TODO - scrolling
+#TODO - moving multipart gates
 
 with open("resources/gategraphics.json") as f:
     gategraphics = json.load(f)
 
 images = {}
 def verifyGateGraphics():
-    img = pygame.image.load("resources/" + "delete.png")
-    img = pygame.transform.smoothscale(img, (config.imageSize, config.imageSize))
-    images["delete"] = img
+    for image in ["delete.png", "plus.png"]:
+        img = pygame.image.load("resources/" + image)
+        img = pygame.transform.smoothscale(img, (config.imageSize, config.imageSize))
+        images[image] = img
+
     for group in gategraphics:
         for key in ["group", "text-color", "background-color", "text-style"]:
             if key not in group:
@@ -102,6 +105,7 @@ def editor(circuitjson):
     done = False
     clock = pygame.time.Clock()
     while not done:
+        clickLocations = []
         screen.fill(config.screenColor)
         drawCircuitToScreen(screen, circuitjson, "Custom Circuit Render")
         drawGateToolbox(screen, [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]], ["control", "delete"])
@@ -109,7 +113,7 @@ def editor(circuitjson):
         #region drag and drop
         x, y = pygame.mouse.get_pos()
         if hand != "":
-            if handmode == ClickMode.AddGate:
+            if handmode == ClickMode.AddGate or handmode == ClickMode.MoveGate:
                 drawGate(screen, hand, x, y)
                 row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
                 if (row is not None) and (col is not None):
@@ -127,7 +131,7 @@ def editor(circuitjson):
                             drawDropBox(screen, row, col, "line")
 
             elif handmode == ClickMode.DeleteGate:
-                screen.blit(images["delete"], (x - config.imageSize/2, y - config.imageSize/2))
+                screen.blit(images["delete.png"], (x - config.imageSize/2, y - config.imageSize/2))
                 row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                 if row is not None and col is not None and col != "end":
                     drawDropBox(screen, row, col, "box")
@@ -147,8 +151,23 @@ def editor(circuitjson):
                             handmode = clickLoc.mode
                             if clickLoc.mode == ClickMode.AddGate:
                                 hand = clickLoc.target
-                            if clickLoc.mode == ClickMode.DeleteGate:
+                            elif clickLoc.mode == ClickMode.DeleteGate:
                                 hand = "delete"
+                            elif clickLoc.mode == ClickMode.MoveGate:
+                                row, col = getDeletePos(x, y, circuitjson, config.gateSize)
+                                hand = clickLoc.target
+                                if hand[-1] in ["x", "y", "z", "u"]:
+                                    hand = hand.replace("c", "")
+                                    hand = hand.replace("m", "")
+                                deleteGate(circuitjson, row, col)
+                                circuitjson = refactorJSON(circuitjson)
+                            elif clickLoc.mode == ClickMode.AddRow:
+                                length = len(circuitjson["rows"][0]["gates"])
+                                newrow = []
+                                for i in range(0, length):
+                                    newrow.append({"type": "empty"})
+                                circuitjson["rows"].append({"gates": newrow})
+                                circuitjson = refactorJSON(circuitjson)
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -161,8 +180,17 @@ def editor(circuitjson):
                             row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                             deleteGate(circuitjson, row, col)
                             circuitjson = refactorJSON(circuitjson)
+                        elif handmode == ClickMode.MoveGate:
+                            row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
+                            addGate(circuitjson, hand, row, col)
+                            circuitjson = refactorJSON(circuitjson)
+
                     hand = ""
                     handmode = ClickMode.Empty
+
+            if event.type == pygame.VIDEORESIZE:
+                config.screenW = event.w
+                config.screenH = event.h
 
     pygame.display.quit()
 
@@ -181,7 +209,7 @@ def drawDropBox(screen, row, col, t):
         warnings.warn("Unexpected drop box type.")
         raise InternalCommandException
 
-def drawCircuitToScreen(screen, circuitjson, title):
+def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 100):
     PygameTools.displayText(screen, title, config.titlepos[0], config.titlepos[0],
                             config.titlesize, config.titleColor, "topleft")
     rows = circuitjson["rows"]
@@ -195,6 +223,13 @@ def drawCircuitToScreen(screen, circuitjson, title):
         pygame.draw.line(screen, (0, 0, 0), (left, top), (left, bottom), config.wireWidth)
         pygame.draw.line(screen, (0, 0, 0), (right, top), (right, bottom), config.wireWidth)
         pygame.draw.line(screen, (0, 0, 0), (left, mid), (right, mid), config.wireWidth)
+
+    if len(rows) < maxrows:
+        y = len(rows) * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight - config.imageSize/2
+        x = config.leftWirePos - config.imageSize/2
+        screen.blit(images["plus.png"], (x, y))
+        clickLocations.append(PygameTools.ClickLocation(x-config.gateSize/2, y-config.gateSize/2,
+                                              config.gateSize, config.gateSize, "add", ClickMode.AddRow))
 
 
     for rownum, row in enumerate(circuitjson["rows"]):
@@ -210,6 +245,12 @@ def drawCircuitToScreen(screen, circuitjson, title):
 
             if gate not in ["empty", "multi"]:
                 drawGate(screen, gate, gatex, gatey)
+                clickLocations.append(
+                    PygameTools.ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2,
+                                              config.gateSize, config.gateSize, gate, ClickMode.MoveGate))
+
+
+
 
 def drawGate(screen, name, x, y):
     gateconfig = {}
@@ -262,7 +303,7 @@ def drawTool(screen, name, x, y):
     if name == "control":
         pygame.draw.circle(screen, (0,0,0), (x,y), 10)
     elif name == "delete":
-        screen.blit(images["delete"], (x - config.imageSize/2, y - config.imageSize/2))
+        screen.blit(images["delete.png"], (x - config.imageSize/2, y - config.imageSize/2))
 
 def getGateColor(gate):
     gateconfig = {}
@@ -276,8 +317,6 @@ def connectControl(screen, color, x, y1, y2):
     pygame.draw.circle(screen, color, (x, y2), config.controlCircleRadius)
 
 def drawGateToolbox(screen, allowedgates, allowedtools):
-    global clickLocations
-    clickLocations = []
     gatemargin = config.gateSpacing - config.gateSize
 
     totalgatecount = len(allowedtools)
