@@ -29,6 +29,7 @@ class PygameConfig:
             self.gateSpacing = configjson["gate-spacing"]
             self.gateSize = configjson["gate-size"]
             self.imageSize = configjson["image-size"]
+            self.smallImageSize = configjson["small-image-size"]
             self.controlCircleRadius = configjson["control-circle-radius"]
             self.controlWireThickness = configjson["control-wire-thickness"]
 
@@ -55,7 +56,8 @@ class ClickMode:
     MoveGate = 2,
     AddControl = 3,
     DeleteGate = 4,
-    AddRow = 5
+    AddRow = 5,
+    DeleteRow = 6
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):

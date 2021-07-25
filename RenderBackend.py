@@ -6,6 +6,27 @@ from PygameTools import config, ClickMode
 import PygameTools
 from CircuitJSONTools import validgates
 
+class WarningMessage:
+    def __init__(self):
+        self.message = ""
+        self.timer = 0
+
+    def tick(self):
+        if self.timer >= 0:
+            self.timer -= 1
+
+    def warn(self, message, timer):
+        self.message = message
+        self.timer = timer
+
+    def display(self):
+        if self.timer > 0:
+            return self.message
+        else:
+            return ""
+
+warningMessage = WarningMessage()
+
 clickLocations = []
 
 with open("resources/gategraphics.json") as f:
@@ -13,9 +34,11 @@ with open("resources/gategraphics.json") as f:
 
 images = {}
 def verifyGateGraphics():
-    for image in ["delete.png", "plus.png"]:
+    for image, size in [["delete.png", config.imageSize], ["plus.png", config.smallImageSize],
+                        ["minus.png", config.smallImageSize], ["redplus.png", config.smallImageSize],
+                        ["redminus.png", config.smallImageSize]]:
         img = pygame.image.load("resources/" + image)
-        img = pygame.transform.smoothscale(img, (config.imageSize, config.imageSize))
+        img = pygame.transform.smoothscale(img, (round(size), round(size)))
         images[image] = img
 
     for group in gategraphics:
@@ -59,7 +82,7 @@ def verifyGateGraphics():
 verifyGateGraphics()
 
 
-def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 100):
+def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 50):
     PygameTools.displayText(screen, title, config.titlepos[0], config.titlepos[0],
                             config.titlesize, config.titleColor, "topleft")
     rows = circuitjson["rows"]
@@ -74,12 +97,31 @@ def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 100):
         pygame.draw.line(screen, (0, 0, 0), (right, top), (right, bottom), config.wireWidth)
         pygame.draw.line(screen, (0, 0, 0), (left, mid), (right, mid), config.wireWidth)
 
-    if len(rows) < maxrows:
-        y = len(rows) * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight - config.imageSize/2
-        x = config.leftWirePos - config.imageSize/2
-        screen.blit(images["plus.png"], (x, y))
-        clickLocations.append(PygameTools.ClickLocation(x-config.gateSize/2, y-config.gateSize/2,
-                                              config.gateSize, config.gateSize, "add", ClickMode.AddRow))
+    if maxrows != minrows:
+        y = len(rows) * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight - config.smallImageSize/2
+        leftx = config.leftWirePos - config.smallImageSize/2 - 3
+        rightx = config.leftWirePos + config.smallImageSize/2 + 3
+
+
+        if len(rows) < maxrows:
+            drawPlusMinus(screen, "plus.png", leftx, y, "add", ClickMode.AddRow)
+
+        else:
+            drawPlusMinus(screen, "redplus.png", leftx, y, "Max row limit reached.", ClickMode.AddRow)
+
+        if len(rows) > minrows:
+            allempty = True
+            for gate in circuitjson["rows"][-1]["gates"]:
+                if gate["type"] != "empty":
+                    allempty = False
+
+            if allempty:
+                drawPlusMinus(screen, "minus.png", rightx, y, "del", ClickMode.DeleteRow)
+            else:
+                drawPlusMinus(screen, "redminus.png", rightx, y, "Row is not empty", ClickMode.DeleteRow)
+
+        else:
+            drawPlusMinus(screen, "redminus.png", rightx, y, "Min row limit reached.", ClickMode.AddRow)
 
 
     for rownum, row in enumerate(circuitjson["rows"]):
@@ -98,6 +140,12 @@ def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 100):
                 clickLocations.append(
                     PygameTools.ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2,
                                               config.gateSize, config.gateSize, gate, ClickMode.MoveGate))
+
+def drawPlusMinus(screen, filename, x, y, target, mode):
+    screen.blit(images[filename], (x, y))
+    clickLocations.append(PygameTools.ClickLocation(x, y, config.smallImageSize, config.smallImageSize,
+                                                    target, mode))
+
 
 def drawGate(screen, name, x, y):
     gateconfig = {}

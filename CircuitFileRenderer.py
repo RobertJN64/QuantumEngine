@@ -1,27 +1,19 @@
 import matplotlib.pyplot as pyplot
 import RenderBackend as Render
-from RenderBackend import images, clickLocations
+from RenderBackend import images, clickLocations, warningMessage
 import PygameTools
 from PygameTools import config, ClickMode
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate
 import warnings
 import pygame
-import json
 
 #TODO - draw parameters
 #TODO - swap
 #TODO - better drop location tracking
-#TODO - remove rows
 #TODO - scrolling
 #TODO - moving multipart gates
 
-with open("resources/gategraphics.json") as f:
-    gategraphics = json.load(f)
-
-
-hand = ""
-handmode = ClickMode.Empty
 
 def render(qc, qcjson, flags):
     if '-h' in flags:
@@ -52,8 +44,9 @@ def runDisplayLoop(circuitjson):
     pygame.display.quit()
 
 def editor(circuitjson):
-    global hand
-    global handmode
+    refactorJSON(circuitjson)
+    hand = ""
+    handmode = ClickMode.Empty
     screen = PygameTools.createPygameWindow()
     done = False
     clock = pygame.time.Clock()
@@ -62,6 +55,8 @@ def editor(circuitjson):
         screen.fill(config.screenColor)
         Render.drawCircuitToScreen(screen, circuitjson, "Custom Circuit Render")
         Render.drawGateToolbox(screen, [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]], ["control", "delete"])
+        PygameTools.displayText(screen, warningMessage.display(), config.screenW/2,
+                                config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, (200,0,0))
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -93,6 +88,7 @@ def editor(circuitjson):
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
         pygame.display.update()
         clock.tick(30)
+        warningMessage.tick()
         # clock.tick() #for fps testing
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -115,12 +111,21 @@ def editor(circuitjson):
                                 deleteGate(circuitjson, row, col)
                                 circuitjson = refactorJSON(circuitjson)
                             elif clickLoc.mode == ClickMode.AddRow:
-                                length = len(circuitjson["rows"][0]["gates"])
-                                newrow = []
-                                for i in range(0, length):
-                                    newrow.append({"type": "empty"})
-                                circuitjson["rows"].append({"gates": newrow})
-                                circuitjson = refactorJSON(circuitjson)
+                                if clickLoc.target == "add":
+                                    length = len(circuitjson["rows"][0]["gates"])
+                                    newrow = []
+                                    for i in range(0, length):
+                                        newrow.append({"type": "empty"})
+                                    circuitjson["rows"].append({"gates": newrow})
+                                    circuitjson = refactorJSON(circuitjson)
+                                else:
+                                    warningMessage.warn(clickLoc.target, 100)
+                            elif clickLoc.mode == ClickMode.DeleteRow:
+                                if clickLoc.target == "del":
+                                    circuitjson["rows"].pop()
+                                    circuitjson = refactorJSON(circuitjson)
+                                else:
+                                    warningMessage.warn(clickLoc.target, 100)
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
