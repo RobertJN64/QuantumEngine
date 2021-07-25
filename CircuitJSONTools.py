@@ -1,7 +1,7 @@
 import warnings
 import json
 from errors import InternalCommandException
-from GateAssembler import addGate, verifyGate, validgates
+from GateAssembler import createGate, verifyGate, validgates, updateGate
 
 #TODO - handle control wire overlap
 
@@ -183,7 +183,7 @@ def assembleCircuit(circuitjson, depth=0):
 
     for x in range(0, depth):
         for index, row in enumerate(rows):
-            addGate(qc, row["gates"][x], index, x, len(rows))
+            createGate(qc, row["gates"][x], index, x, len(rows))
     return qc
 
 def preassembleStages(circuitjson):
@@ -266,3 +266,57 @@ def compileCircuit(params):
 
     with open("circuits/" + fnameout + ".json", "w+") as f:
         json.dump(outjson, f, indent=4)
+
+
+def addGate(circuitjson, gate, rownum, colnum):
+    if (rownum is not None) and (colnum is not None):
+        if colnum == "end":
+            for index, row in enumerate(circuitjson["rows"]):
+                if index == rownum:
+                    row["gates"].append({"type": gate})
+                else:
+                    row["gates"].append({"type": "empty"})
+
+        elif circuitjson["rows"][rownum]["gates"][colnum]["type"] == "empty":
+            circuitjson["rows"][rownum]["gates"][colnum]["type"] = gate
+
+        else:
+            if colnum > 0 and circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] == "empty":
+                circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] = gate
+            else:
+                for index, row in enumerate(circuitjson["rows"]):
+                    if index == rownum:
+                        row["gates"].insert(colnum, {"type": gate})
+                    else:
+                        row["gates"].insert(colnum, {"type": "empty"})
+
+def deleteGate(circuitjson, rownum, colnum):
+    if (rownum is not None) and (colnum is not None):
+        gatejson = circuitjson["rows"][rownum]["gates"][colnum]
+
+        if gatejson["type"] == "empty":
+            warnings.warn("Deleting empty gate!")
+            raise InternalCommandException
+
+        if gatejson["type"] == "multi":
+            for row in circuitjson["rows"]:
+                gatejsonb = row["gates"][colnum]
+                control = gatejsonb.get("control", [])
+                if rownum in control:
+                    control.remove(rownum)
+                    row["gates"][colnum] = updateGate(gatejsonb)
+            gatejson["type"] = "empty"
+
+        elif len(gatejson.get("control", [])) == 0:
+            circuitjson["rows"][rownum]["gates"][colnum]["type"] = "empty"
+            circuitjson["rows"][rownum]["gates"][colnum] = updateGate(gatejson)
+
+        elif len(gatejson.get("control", [])) > 0:
+            for item in gatejson["control"]:
+                circuitjson["rows"][item]["gates"][colnum]["type"] = "empty"
+            circuitjson["rows"][rownum]["gates"][colnum]["type"] = "empty"
+            circuitjson["rows"][rownum]["gates"][colnum] = updateGate(gatejson)
+
+        else:
+            warnings.warn("Unexpected format for gatejson: " + str(gatejson))
+            raise InternalCommandException

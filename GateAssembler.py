@@ -68,7 +68,7 @@ def verifyGate(gatejson, row, col, rowcount):
                 raise InternalCommandException
     # endregion
 
-def addGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowcount:int):
+def createGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowcount:int):
     gate = gatejson["type"]
 
     control = gatejson.get("control", [])
@@ -190,7 +190,7 @@ def updateGate(gatejson):
         gatejson["type"] = "ccx"
 
     else:
-        t = t[:-1]
+        t = t[-1]
         if t not in "x, y, z":
             warnings.warn("Error updating gate type: " + str(t))
             raise InternalCommandException
