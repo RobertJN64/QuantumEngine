@@ -269,24 +269,27 @@ def compileCircuit(params):
 
 
 def addGate(circuitjson, gate, rownum, colnum):
+    if gate["type"] in "u, cu":
+        if len(gate.get("params", [])) == 0:
+            gate["params"] = [0,0,0]
     if (rownum is not None) and (colnum is not None):
         if colnum == "end":
             for index, row in enumerate(circuitjson["rows"]):
                 if index == rownum:
-                    row["gates"].append({"type": gate})
+                    row["gates"].append(gate)
                 else:
                     row["gates"].append({"type": "empty"})
 
         elif circuitjson["rows"][rownum]["gates"][colnum]["type"] == "empty":
-            circuitjson["rows"][rownum]["gates"][colnum]["type"] = gate
+            circuitjson["rows"][rownum]["gates"][colnum] = gate
 
         else:
             if colnum > 0 and circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] == "empty":
-                circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] = gate
+                circuitjson["rows"][rownum]["gates"][colnum - 1] = gate
             else:
                 for index, row in enumerate(circuitjson["rows"]):
                     if index == rownum:
-                        row["gates"].insert(colnum, {"type": gate})
+                        row["gates"].insert(colnum, gate)
                     else:
                         row["gates"].insert(colnum, {"type": "empty"})
 
@@ -308,14 +311,12 @@ def deleteGate(circuitjson, rownum, colnum):
             gatejson["type"] = "empty"
 
         elif len(gatejson.get("control", [])) == 0:
-            circuitjson["rows"][rownum]["gates"][colnum]["type"] = "empty"
-            circuitjson["rows"][rownum]["gates"][colnum] = updateGate(gatejson)
+            circuitjson["rows"][rownum]["gates"][colnum] = {"type": "empty"}
 
         elif len(gatejson.get("control", [])) > 0:
             for item in gatejson["control"]:
-                circuitjson["rows"][item]["gates"][colnum]["type"] = "empty"
-            circuitjson["rows"][rownum]["gates"][colnum]["type"] = "empty"
-            circuitjson["rows"][rownum]["gates"][colnum] = updateGate(gatejson)
+                circuitjson["rows"][item]["gates"][colnum] = {"type": "empty"}
+            circuitjson["rows"][rownum]["gates"][colnum] = {"type": "empty"}
 
         else:
             warnings.warn("Unexpected format for gatejson: " + str(gatejson))

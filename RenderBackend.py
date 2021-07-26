@@ -136,10 +136,10 @@ def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 50):
                     connectControl(screen, getGateColor(gate), gatex, gatey, controly)
 
             if gate not in ["empty", "multi"]:
-                drawGate(screen, gate, gatex, gatey)
+                drawGate(screen, gatejson, gatex, gatey)
                 clickLocations.append(
                     PygameTools.ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2,
-                                              config.gateSize, config.gateSize, gate, ClickMode.MoveGate))
+                                              config.gateSize, config.gateSize, gatejson, ClickMode.MoveGate))
 
 def drawPlusMinus(screen, filename, x, y, target, mode):
     screen.blit(images[filename], (x, y))
@@ -147,11 +147,24 @@ def drawPlusMinus(screen, filename, x, y, target, mode):
                                                     target, mode))
 
 
-def drawGate(screen, name, x, y):
+def drawGate(screen, gate: dict, x, y):
     gateconfig = {}
+    name = gate["type"]
+    params = gate.get("params", [])
+    ps = []
+    for item in params:
+        ps.append(round(item))
+    pstring = str(ps).replace("[", "").replace("]", "")
+    if len(pstring) > 8:
+        pstring = pstring[0:6] + "..."
+
     for group in gategraphics:
         if name in group["group"]:
             gateconfig = group
+
+    if gateconfig == {}:
+        warnings.warn("No gategraphics found for gate: " + str(name))
+        raise InternalCommandException
 
     if gateconfig["text-style"] not in ["swap", "barrier"]:
         pygame.draw.rect(screen, gateconfig["background-color"],
@@ -180,13 +193,24 @@ def drawGate(screen, name, x, y):
         pygame.draw.line(screen, (0, 0, 0), (rightx, topy), (rightx - l, topy), 3)
         pygame.draw.line(screen, (0, 0, 0), (rightx, bottomy), (rightx - l, bottomy), 3)
 
+
     elif gateconfig["text-style"] == "lastchar":
         text = name[-1].upper()
+        if len(params) > 0:
+            y -= 5
+            PygameTools.displayText(screen, pstring, x, y + gateconfig["text-size"], round(gateconfig["text-size"] / 1.5),
+                                    gateconfig["text-color"])
         PygameTools.displayText(screen, text, x, y, gateconfig["text-size"], gateconfig["text-color"])
+
 
     elif gateconfig["text-style"] == "raw":
         text = gateconfig["text"]
+        if len(params) > 0:
+            y -= 5
+            PygameTools.displayText(screen, pstring, x, y + gateconfig["text-size"], round(gateconfig["text-size"] / 1.5),
+                                    gateconfig["text-color"])
         PygameTools.displayText(screen, text, x, y, gateconfig["text-size"], gateconfig["text-color"])
+
 
     elif gateconfig["text-style"] == "image":
         screen.blit(images[gateconfig["image"]], (x - config.imageSize / 2, y - config.imageSize / 2))
@@ -235,10 +259,10 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
             if gate not in validgates:
                 warnings.warn("Gate: " + str(gate) + " not valid.")
                 raise InternalCommandException
-            drawGate(screen, gate, gatepos, midy)
+            drawGate(screen, {"type": gate}, gatepos, midy)
             clickLocations.append(
                 PygameTools.ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
-                                          config.gateSize, config.gateSize, gate, ClickMode.AddGate))
+                                          config.gateSize, config.gateSize, {"type": gate}, ClickMode.AddGate))
             gatepos += config.gateSpacing
         pygame.draw.line(screen, config.toolboxColor, (gatepos - gatemargin, topy), (gatepos - gatemargin, bottomy),
                          config.toolboxThickness)

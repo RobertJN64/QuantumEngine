@@ -57,7 +57,8 @@ class ClickMode:
     AddControl = 3,
     DeleteGate = 4,
     AddRow = 5,
-    DeleteRow = 6
+    DeleteRow = 6,
+    EditParams = 7
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):

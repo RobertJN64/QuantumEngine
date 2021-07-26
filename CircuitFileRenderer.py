@@ -5,10 +5,10 @@ import PygameTools
 from PygameTools import config, ClickMode
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate
+from PygameTextInput import TextInput
 import warnings
 import pygame
 
-#TODO - draw parameters
 #TODO - swap
 #TODO - better drop location tracking
 #TODO - scrolling
@@ -47,6 +47,8 @@ def editor(circuitjson):
     refactorJSON(circuitjson)
     hand = ""
     handmode = ClickMode.Empty
+    paramboxopen = False
+    parambox = TextInput()
     screen = PygameTools.createPygameWindow()
     done = False
     clock = pygame.time.Clock()
@@ -86,15 +88,13 @@ def editor(circuitjson):
 
         #endregion
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
-        pygame.display.update()
-        clock.tick(30)
-        warningMessage.tick()
-        # clock.tick() #for fps testing
-        for event in pygame.event.get():
+
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 done = True
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1: #left click:
+                if event.button == 1 and not paramboxopen: #left click:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
                             handmode = clickLoc.mode
@@ -105,9 +105,9 @@ def editor(circuitjson):
                             elif clickLoc.mode == ClickMode.MoveGate:
                                 row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                                 hand = clickLoc.target
-                                if hand[-1] in ["x", "y", "z", "u"]:
-                                    hand = hand.replace("c", "")
-                                    hand = hand.replace("m", "")
+                                if hand["type"][-1] in ["x", "y", "z", "u"]:
+                                    hand["type"] = hand["type"].replace("c", "")
+                                    hand["type"] = hand["type"].replace("m", "")
                                 deleteGate(circuitjson, row, col)
                                 circuitjson = refactorJSON(circuitjson)
                             elif clickLoc.mode == ClickMode.AddRow:
@@ -126,9 +126,26 @@ def editor(circuitjson):
                                     circuitjson = refactorJSON(circuitjson)
                                 else:
                                     warningMessage.warn(clickLoc.target, 100)
+                if event.button == 3 and not paramboxopen:
+                    for clickLoc in clickLocations:
+                        if clickLoc.checkClick(x, y):
+                            if clickLoc.mode == ClickMode.MoveGate:
+                                if clickLoc.target["type"][-1] in ["x", "y", "z", "u"]:
+                                    handmode = ClickMode.EditParams
+                                    hand = clickLoc.target
+                                    paramboxopen = True
+                                    params = hand.get("params", [])
+                                    p = []
+                                    for param in params:
+                                        p.append(str(round(param)))
+                                    if len(p) == 0:
+                                        p = ["180"]
+                                    parambox.input_string = ", ".join(p)
+                                    parambox.cursor_position = len(parambox.input_string)
+
 
             if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
+                if event.button == 1 and not paramboxopen:
                     if hand != "":
                         if handmode == ClickMode.AddGate:
                             row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
@@ -149,6 +166,39 @@ def editor(circuitjson):
             if event.type == pygame.VIDEORESIZE:
                 config.screenW = event.w
                 config.screenH = event.h
+
+        if paramboxopen:
+            if parambox.update(events):
+                paramboxopen = False
+                newparam = parambox.get_text()
+                parambox.clear_text()
+                try:
+                    newparams = newparam.split(',')
+                    params = []
+                    for param in newparams:
+                        params.append(float(param))
+
+                    hand["params"] = params
+                    hand = ""
+                    handmode = ClickMode.Empty
+
+                except ValueError:
+                    warningMessage.warn("Invalid param format.", 100)
+
+        if paramboxopen:
+            surf = parambox.get_surface()
+            pygame.draw.rect(screen, (100,100,100), (config.screenW/2 - 150, config.screenH/2 - 100, 300, 100),
+                             border_radius=3)
+            pygame.draw.rect(screen, (0, 0, 0), (config.screenW / 2 - 150, config.screenH / 2 - 100, 300, 100),
+                             width=5, border_radius=3)
+            PygameTools.displayText(screen, "Enter param: ", config.screenW/2,
+                                    config.screenH/2 - 75, 25, (0,0,0))
+            screen.blit(surf, (config.screenW/2 - 125, config.screenH/2 - 50))
+
+        pygame.display.update()
+        clock.tick(30)
+        # clock.tick() #for fps testing
+        warningMessage.tick()
 
     pygame.display.quit()
 
