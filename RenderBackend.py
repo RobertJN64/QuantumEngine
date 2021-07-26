@@ -37,7 +37,7 @@ def verifyGateGraphics():
     for image, size in [["delete.png", config.imageSize], ["plus.png", config.smallImageSize],
                         ["minus.png", config.smallImageSize], ["redplus.png", config.smallImageSize],
                         ["redminus.png", config.smallImageSize], ["save.png", config.smallImageSize]]:
-        img = pygame.image.load("resources/" + image)
+        img = pygame.image.load("resources/images/" + image)
         img = pygame.transform.smoothscale(img, (round(size), round(size)))
         images[image] = img
 
@@ -53,7 +53,7 @@ def verifyGateGraphics():
                 if "image" not in group:
                     warnings.warn("Group: " + str(group["group"]) + " missing image.")
                     raise InternalCommandException
-                img = pygame.image.load("resources/" + group["image"])
+                img = pygame.image.load("resources/images/" + group["image"])
                 img = pygame.transform.smoothscale(img, (config.imageSize,config.imageSize))
                 images[group["image"]] = img
             if group["text-style"] in ["lastchar", "raw"]:

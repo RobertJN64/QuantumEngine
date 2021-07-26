@@ -49,6 +49,7 @@ def editor(circuitjson):
     parambox = TextInput()
     screen = PygameTools.createPygameWindow()
     done = False
+    save = False
     clock = pygame.time.Clock()
     while not done:
         clickLocations.clear()
@@ -106,9 +107,6 @@ def editor(circuitjson):
                             elif clickLoc.mode == ClickMode.MoveGate:
                                 row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                                 hand = clickLoc.target
-                                if hand["type"][-1] in ["x", "y", "z", "u"]:
-                                    hand["type"] = hand["type"].replace("c", "")
-                                    hand["type"] = hand["type"].replace("m", "")
                                 deleteGate(circuitjson, row, col)
                                 circuitjson = refactorJSON(circuitjson)
                             elif clickLoc.mode == ClickMode.AddRow:
@@ -131,6 +129,7 @@ def editor(circuitjson):
                                 if clickLoc.target == "save":
                                     circuitjson = refactorJSON(circuitjson)
                                     done = True
+                                    save = True
 
                 if event.button == 3 and not paramboxopen:
                     for clickLoc in clickLocations:
@@ -191,7 +190,6 @@ def editor(circuitjson):
                 except ValueError:
                     warningMessage.warn("Invalid param format.", 100)
 
-        if paramboxopen:
             surf = parambox.get_surface()
             pygame.draw.rect(screen, (100,100,100), (config.screenW/2 - 150, config.screenH/2 - 100, 300, 100),
                              border_radius=3)
@@ -207,7 +205,7 @@ def editor(circuitjson):
         warningMessage.tick()
 
     pygame.display.quit()
-    return circuitjson
+    return save, circuitjson
 
 def drawDropBox(screen, row, col, t):
     gatex = col * config.gateSpacing + config.leftWirePos + config.gateSpacing / 2 + 10

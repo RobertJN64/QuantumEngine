@@ -23,7 +23,7 @@ class Gate:
             else:
                 try:
                     if not passedGateName:
-                        self.control.append(round(float(item),6))
+                        self.control.append(int(item))
                     else:
                         self.params.append(round(float(item),6))
                 except ValueError:
@@ -31,8 +31,8 @@ class Gate:
                     raise InternalCommandException
 
         if self.gatename == "":
-            warnings.warn("Gate at (" + str(row) + "," + str(col) + ") missing.")
-            raise InternalCommandException
+            self.gatename = "empty"
+
 
     def getJson(self):
         d = {"type": self.gatename}
@@ -70,7 +70,6 @@ def validateJSON(circuitjson):
         if "gates" not in row:
             warnings.warn("Row # " + str(index) + " missing gates.")
             raise InternalCommandException
-
 
     maxlen = 0
     for row in rows:
@@ -272,26 +271,66 @@ def addGate(circuitjson, gate, rownum, colnum):
     if gate["type"] in "u, cu":
         if len(gate.get("params", [])) == 0:
             gate["params"] = [0,0,0]
+    controls = gate.get("control", [])
+
+    for item in controls:
+        if item == rownum:
+            controls.remove(item)
+            updateGate(gate)
+
     if (rownum is not None) and (colnum is not None):
         if colnum == "end":
             for index, row in enumerate(circuitjson["rows"]):
                 if index == rownum:
                     row["gates"].append(gate)
+                elif index in controls:
+                    row["gates"].append({"type": "multi"})
                 else:
                     row["gates"].append({"type": "empty"})
 
         elif circuitjson["rows"][rownum]["gates"][colnum]["type"] == "empty":
             circuitjson["rows"][rownum]["gates"][colnum] = gate
 
+            if len(controls) > 0:
+                adding = False
+                for item in controls:
+                    if circuitjson["rows"][item]["gates"][colnum]["type"] == "empty":
+                        circuitjson["rows"][item]["gates"][colnum] = {"type": "multi"}
+                    else:
+                        adding = True
+                        circuitjson["rows"][item]["gates"].insert(colnum, {"type": "multi"})
+                if adding:
+                    for index, row in enumerate(circuitjson["rows"]):
+                        if index not in controls:
+                            row["gates"].insert(colnum, {"type": "multi"})
+
+
         else:
             if colnum > 0 and circuitjson["rows"][rownum]["gates"][colnum - 1]["type"] == "empty":
                 circuitjson["rows"][rownum]["gates"][colnum - 1] = gate
+                if len(controls) > 0:
+                    adding = False
+                    for item in controls:
+                        if circuitjson["rows"][item]["gates"][colnum - 1]["type"] == "empty":
+                            circuitjson["rows"][item]["gates"][colnum - 1] = {"type": "multi"}
+                        else:
+                            adding = True
+                            circuitjson["rows"][item]["gates"].insert(colnum - 1, {"type": "multi"})
+                    if adding:
+                        for index, row in enumerate(circuitjson["rows"]):
+                            if index not in controls:
+                                row["gates"].insert(colnum - 1, {"type": "multi"})
+
             else:
                 for index, row in enumerate(circuitjson["rows"]):
                     if index == rownum:
                         row["gates"].insert(colnum, gate)
+                    elif index in controls:
+                        row["gates"].insert(colnum, {"type": "multi"})
                     else:
                         row["gates"].insert(colnum, {"type": "empty"})
+
+
 
 def deleteGate(circuitjson, rownum, colnum):
     if (rownum is not None) and (colnum is not None):

@@ -77,12 +77,13 @@ def main():
                     qcJSON.validateJSON(circuitjson)
                 else:
                     circuitjson = {"rows": [{"gates": []}]}
-                circuitjson = qcRENDER.editor(circuitjson)
+                save, circuitjson = qcRENDER.editor(circuitjson)
                 qcJSON.validateJSON(circuitjson)
-                if len(params) > 0:
-                    qcJSON.saveJSON(circuitjson, params[0])
-                else:
-                    qcJSON.saveJSON(circuitjson, input("File name: "))
+                if save:
+                    if len(params) > 0:
+                        qcJSON.saveJSON(circuitjson, params[0])
+                    else:
+                        qcJSON.saveJSON(circuitjson, input("File name: "))
 
             else:
                 raise CommandNotFoundError(cmd)

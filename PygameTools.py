@@ -75,7 +75,7 @@ class ClickLocation:
 
 
 def createPygameWindow():
-    pygame.display.set_icon(pygame.image.load('resources/qc_icon.ico'))
+    pygame.display.set_icon(pygame.image.load('resources/images/qc_icon.ico'))
     pygame.display.set_caption("QC Circuit Render")
     screen = pygame.display.set_mode((config.screenW, config.screenH), pygame.RESIZABLE)
     return screen
