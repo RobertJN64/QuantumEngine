@@ -15,7 +15,7 @@ coremodifiers = ["", "c", "r", "cr", "mcr"]
 universalgates = ["u", "cu"]
 specialgates = ["ccx", "h", "ch", "i"]
 othergates = ["swap", "cswap", "barrier", "reset"]
-customgates = ["empty", "multi", "m", "puzzle"]  # TODO - if gate
+customgates = ["empty", "multi", "m", "puzzle"]
 for p in pauligates:
     for mod in coremodifiers:
         validgates.append(mod + p)
@@ -159,6 +159,7 @@ def createGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowcount:i
         raise InternalCommandException
 
 def updateGate(gatejson):
+    """Updates gate in place based on param amount + control amount. Returns gatejson"""
     t = gatejson["type"]
     if t in ["swap", "cswap", "barrier", "reset", "multi", "m", "i", "puzzle"]:
         warnings.warn("Error updating gate type: " + str(t))

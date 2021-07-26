@@ -2,7 +2,7 @@ import pygame
 from errors import InternalCommandException
 import warnings
 import json
-from PygameTools import config, ClickMode
+from PygameTools import config, ClickMode, ClickLocation
 import PygameTools
 from CircuitJSONTools import validgates
 
@@ -36,7 +36,7 @@ images = {}
 def verifyGateGraphics():
     for image, size in [["delete.png", config.imageSize], ["plus.png", config.smallImageSize],
                         ["minus.png", config.smallImageSize], ["redplus.png", config.smallImageSize],
-                        ["redminus.png", config.smallImageSize]]:
+                        ["redminus.png", config.smallImageSize], ["save.png", config.smallImageSize]]:
         img = pygame.image.load("resources/" + image)
         img = pygame.transform.smoothscale(img, (round(size), round(size)))
         images[image] = img
@@ -137,14 +137,12 @@ def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 50):
 
             if gate not in ["empty", "multi"]:
                 drawGate(screen, gatejson, gatex, gatey)
-                clickLocations.append(
-                    PygameTools.ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2,
-                                              config.gateSize, config.gateSize, gatejson, ClickMode.MoveGate))
+                clickLocations.append(ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2, config.gateSize,
+                                                    config.gateSize, gatejson, ClickMode.MoveGate))
 
 def drawPlusMinus(screen, filename, x, y, target, mode):
     screen.blit(images[filename], (x, y))
-    clickLocations.append(PygameTools.ClickLocation(x, y, config.smallImageSize, config.smallImageSize,
-                                                    target, mode))
+    clickLocations.append(ClickLocation(x, y, config.smallImageSize, config.smallImageSize, target, mode))
 
 
 def drawGate(screen, gate: dict, x, y):
@@ -260,9 +258,8 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
                 warnings.warn("Gate: " + str(gate) + " not valid.")
                 raise InternalCommandException
             drawGate(screen, {"type": gate}, gatepos, midy)
-            clickLocations.append(
-                PygameTools.ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
-                                          config.gateSize, config.gateSize, {"type": gate}, ClickMode.AddGate))
+            clickLocations.append(ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
+                                                config.gateSize, config.gateSize, {"type": gate}, ClickMode.AddGate))
             gatepos += config.gateSpacing
         pygame.draw.line(screen, config.toolboxColor, (gatepos - gatemargin, topy), (gatepos - gatemargin, bottomy),
                          config.toolboxThickness)
@@ -271,7 +268,6 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
     for gate in allowedtools:
         drawTool(screen, gate, gatepos, midy)
         if gate == "delete":
-            clickLocations.append(
-                PygameTools.ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
-                                          config.gateSize, config.gateSize, gate, ClickMode.DeleteGate))
+            clickLocations.append(ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
+                                                config.gateSize, config.gateSize, gate, ClickMode.DeleteGate))
         gatepos += config.gateSpacing

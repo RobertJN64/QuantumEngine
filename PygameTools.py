@@ -58,7 +58,8 @@ class ClickMode:
     DeleteGate = 4,
     AddRow = 5,
     DeleteRow = 6,
-    EditParams = 7
+    EditParams = 7,
+    Command = 8 #for custom commands like save, etc.
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):

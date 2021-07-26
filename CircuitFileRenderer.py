@@ -2,18 +2,16 @@ import matplotlib.pyplot as pyplot
 import RenderBackend as Render
 from RenderBackend import images, clickLocations, warningMessage
 import PygameTools
-from PygameTools import config, ClickMode
+from PygameTools import config, ClickMode, ClickLocation
 from errors import InternalCommandException
-from CircuitJSONTools import refactorJSON, addGate, deleteGate
+from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate
 from PygameTextInput import TextInput
 import warnings
 import pygame
 
-#TODO - swap
-#TODO - better drop location tracking
+#TODO - swap gate graphics
 #TODO - scrolling
 #TODO - moving multipart gates
-
 
 def render(qc, qcjson, flags):
     if '-h' in flags:
@@ -60,6 +58,11 @@ def editor(circuitjson):
         PygameTools.displayText(screen, warningMessage.display(), config.screenW/2,
                                 config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, (200,0,0))
 
+        PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
+        screen.blit(images["save.png"], (config.screenW - config.smallImageSize - 10, 5))
+        clickLocations.append(ClickLocation(config.screenW - config.smallImageSize - 10, 5, config.smallImageSize,
+                                            config.smallImageSize, target="save", mode=ClickMode.Command))
+
         #region drag and drop
         x, y = pygame.mouse.get_pos()
         if hand != "":
@@ -85,9 +88,7 @@ def editor(circuitjson):
                 row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                 if row is not None and col is not None and col != "end":
                     drawDropBox(screen, row, col, "box")
-
         #endregion
-        PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
 
         events = pygame.event.get()
         for event in events:
@@ -126,6 +127,11 @@ def editor(circuitjson):
                                     circuitjson = refactorJSON(circuitjson)
                                 else:
                                     warningMessage.warn(clickLoc.target, 100)
+                            elif clickLoc.mode == ClickMode.Command:
+                                if clickLoc.target == "save":
+                                    circuitjson = refactorJSON(circuitjson)
+                                    done = True
+
                 if event.button == 3 and not paramboxopen:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
@@ -142,7 +148,6 @@ def editor(circuitjson):
                                         p = ["180"]
                                     parambox.input_string = ", ".join(p)
                                     parambox.cursor_position = len(parambox.input_string)
-
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1 and not paramboxopen:
@@ -179,6 +184,7 @@ def editor(circuitjson):
                         params.append(float(param))
 
                     hand["params"] = params
+                    updateGate(hand)
                     hand = ""
                     handmode = ClickMode.Empty
 
@@ -201,6 +207,7 @@ def editor(circuitjson):
         warningMessage.tick()
 
     pygame.display.quit()
+    return circuitjson
 
 def drawDropBox(screen, row, col, t):
     gatex = col * config.gateSpacing + config.leftWirePos + config.gateSpacing / 2 + 10
