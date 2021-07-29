@@ -57,7 +57,7 @@ def sendToIBM(circuit, shots=1000, useSimulator=False):
     print("Found ", "simulator " * config.simulator, "backend: ", backend.name(),
           " with version ", config.backend_version, sep="")
     print("Backend has", config.n_qubits, "qubits,", circuit.num_qubits, "needed.")
-    print("Backend is running:", backend.status().pending_jobs, "jobs.")
+    print("Backend is running:", backend.status().pending_jobs, "jobs waiting.")
     job = execute(circuit, backend, shots=shots)
     print("Job Queued")
     job_monitor(job)
