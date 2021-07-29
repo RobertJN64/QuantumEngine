@@ -1,3 +1,4 @@
+import qiskit.providers
 from qiskit import transpile, execute
 from qiskit.providers.ibmq import least_busy
 from qiskit import IBMQ
@@ -7,8 +8,16 @@ from errors import InternalCommandException
 from qiskit.visualization import plot_histogram, plot_bloch_multivector
 import warnings
 import matplotlib.pyplot as pyplot
+import threading
 
-provider = IBMQ.load_account()
+provider:qiskit.providers.ibmq.AccountProvider
+provideractive = False
+def loadaccount():
+    global provider
+    global provideractive
+    provider = IBMQ.load_account()
+    provideractive = True
+threading.Thread(target=loadaccount).start()
 
 def visualize(result, circuit, flags):
     if '-t' in flags:
@@ -33,6 +42,10 @@ def simulate(circuit, shots=1000):
     return result
 
 def sendToIBM(circuit, shots=1000, useSimulator=False):
+    if not provideractive:
+        print("Issue loading account... Please wait while we retry...")
+    while not provideractive:
+        pass
     backends = provider.backends(filters=lambda x: x.configuration().n_qubits >= circuit.num_qubits
                                         and (not x.configuration().simulator or useSimulator)
                                         and x.status().operational == True)

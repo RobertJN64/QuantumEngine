@@ -1,33 +1,33 @@
 {
-    "rows": [
+  "rows": [
+    {
+      "gates": [
         {
-            "gates": [
-                {
-                    "type": "h"
-                },
-                {
-                    "type": "multi"
-                },
-                {
-                    "type": "m"
-                }
-            ]
+          "type": "h"
         },
         {
-            "gates": [
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "cx",
-                    "control": [
-                        0
-                    ]
-                },
-                {
-                    "type": "m"
-                }
-            ]
+          "type": "multi"
+        },
+        {
+          "type": "m"
         }
-    ]
+      ]
+    },
+    {
+      "gates": [
+        {
+          "type": "empty"
+        },
+        {
+          "type": "cx",
+          "control": [
+            0
+          ]
+        },
+        {
+          "type": "m"
+        }
+      ]
+    }
+  ]
 }

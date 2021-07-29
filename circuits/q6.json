@@ -22,9 +22,6 @@
                 },
                 {
                     "type": "m"
-                },
-                {
-                    "type": "empty"
                 }
             ]
         },
@@ -38,9 +35,6 @@
                     "control": [
                         0
                     ]
-                },
-                {
-                    "type": "empty"
                 },
                 {
                     "type": "empty"
@@ -83,49 +77,12 @@
                     "type": "empty"
                 },
                 {
-                    "type": "empty"
-                },
-                {
                     "type": "m"
                 }
             ]
         },
         {
             "gates": [
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "cx",
-                    "control": [
-                        0
-                    ]
-                },
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "empty"
-                },
-                {
-                    "type": "m"
-                }
-            ]
-        },
-        {
-            "gates": [
-                {
-                    "type": "empty"
-                },
                 {
                     "type": "empty"
                 },
@@ -167,9 +124,6 @@
                     "type": "empty"
                 },
                 {
-                    "type": "empty"
-                },
-                {
                     "type": "cx",
                     "control": [
                         0
@@ -177,6 +131,34 @@
                 },
                 {
                     "type": "empty"
+                },
+                {
+                    "type": "m"
+                }
+            ]
+        },
+        {
+            "gates": [
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "empty"
+                },
+                {
+                    "type": "cx",
+                    "control": [
+                        0
+                    ]
                 },
                 {
                     "type": "m"

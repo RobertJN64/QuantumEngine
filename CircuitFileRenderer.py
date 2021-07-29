@@ -4,16 +4,24 @@ from RenderBackend import images, clickLocations, warningMessage
 import PygameTools
 from PygameTools import config, ClickMode, ClickLocation
 from errors import InternalCommandException
-from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate
+from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate, assembleCircuit
 from PygameTextInput import TextInput
 import warnings
 import pygame
 
 #TODO - swap gate graphics
 #TODO - scrolling
-#TODO - moving multipart gates
 
-def render(qc, qcjson, flags):
+editorfig = None
+
+def cleanclose(event):
+    global editorfig
+    if event.name == "":
+        pass
+    editorfig = None
+    pyplot.ioff()
+
+def render(qc, qcjson, flags, fig=None):
     if '-h' in flags:
         pass
     elif '-t' in flags:
@@ -21,7 +29,8 @@ def render(qc, qcjson, flags):
     elif '-c' in flags:
         runDisplayLoop(qcjson)
     else:
-        fig = pyplot.figure()
+        if fig is None:
+            fig = pyplot.figure()
         plt = fig.add_subplot()
         qc.draw("mpl", ax=plt)
         pyplot.show()
@@ -42,6 +51,7 @@ def runDisplayLoop(circuitjson):
     pygame.display.quit()
 
 def editor(circuitjson):
+    global editorfig
     refactorJSON(circuitjson)
     hand = ""
     handmode = ClickMode.Empty
@@ -63,6 +73,9 @@ def editor(circuitjson):
         screen.blit(images["save.png"], (config.screenW - config.smallImageSize - 10, 5))
         clickLocations.append(ClickLocation(config.screenW - config.smallImageSize - 10, 5, config.smallImageSize,
                                             config.smallImageSize, target="save", mode=ClickMode.Command))
+        screen.blit(images["view.png"], (config.screenW - config.smallImageSize - 10, config.smallImageSize + 15))
+        clickLocations.append(ClickLocation(config.screenW - config.smallImageSize - 10, config.smallImageSize + 15, config.smallImageSize,
+                                            config.smallImageSize, target="view", mode=ClickMode.Command))
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -130,6 +143,13 @@ def editor(circuitjson):
                                     circuitjson = refactorJSON(circuitjson)
                                     done = True
                                     save = True
+                                elif clickLoc.target == "view":
+                                    circuitjson = refactorJSON(circuitjson)
+                                    if editorfig is None:
+                                        editorfig = pyplot.figure()
+                                    pyplot.ion()
+                                    render(assembleCircuit(circuitjson), circuitjson, [], editorfig)
+                                    editorfig.canvas.mpl_connect('close_event', cleanclose)
 
                 if event.button == 3 and not paramboxopen:
                     for clickLoc in clickLocations:
@@ -199,12 +219,17 @@ def editor(circuitjson):
                                     config.screenH/2 - 75, 25, (0,0,0))
             screen.blit(surf, (config.screenW/2 - 125, config.screenH/2 - 50))
 
+        if editorfig is not None:
+            editorfig.canvas.flush_events()
+
         pygame.display.update()
         clock.tick(30)
         # clock.tick() #for fps testing
         warningMessage.tick()
 
     pygame.display.quit()
+    pyplot.ioff()
+    pyplot.show()
     return save, circuitjson
 
 def drawDropBox(screen, row, col, t):

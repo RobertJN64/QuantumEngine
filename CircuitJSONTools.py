@@ -3,8 +3,6 @@ import json
 from errors import InternalCommandException
 from GateAssembler import createGate, verifyGate, validgates, updateGate
 
-#TODO - handle control wire overlap
-
 class Gate:
     def __init__(self, gatestr: str, row, col):
         self.parts = gatestr.split()
@@ -58,143 +56,6 @@ def saveJSON(circuitjson, fname):
     """Saves a circuit file"""
     with open("circuits/" + fname + ".json", "w+") as f:
         json.dump(circuitjson, f, indent=2)
-
-def validateJSON(circuitjson):
-    """Loads JSON and warns if there are any errors."""
-    if "rows" not in circuitjson or len(circuitjson["rows"]) == 0:
-        warnings.warn("Malformed file. Missing rows.")
-        raise InternalCommandException
-
-    rows = circuitjson["rows"]
-    for index, row in enumerate(rows):
-        if "gates" not in row:
-            warnings.warn("Row # " + str(index) + " missing gates.")
-            raise InternalCommandException
-
-    maxlen = 0
-    for row in rows:
-        maxlen = max(len(row["gates"]), maxlen)
-
-    for row in rows:
-        for i in range(len(row["gates"]), maxlen):
-            row.append({"type": "empty"})
-
-    for rownum, row in enumerate(rows):
-        gates = row["gates"]
-        for index, gate in enumerate(gates):
-            if "type" not in gate:
-                warnings.warn("Gate in row #: " + str(rownum) + " missing gate type at gate: " + str(index))
-                raise InternalCommandException
-            if gate["type"] not in validgates:
-                warnings.warn("Gate <" + str(gate["type"]) + "> not valid.")
-                raise InternalCommandException
-
-    for x in range(0, len(rows[0]["gates"])):
-        mult_expected = []
-        mult_used = []
-        for index, row in enumerate(rows):
-            #print(row["gates"][x])
-            control = row["gates"][x].get("control", [])
-            for item in control:
-                if type(item) is int and item < len(rows):
-                    pass
-                else:
-                    warnings.warn("Gate in row " + str(index) + " at col " + str(x) + " requesting invalid control.")
-                    raise InternalCommandException
-
-        for item in mult_expected:
-            if item in mult_used:
-                mult_used.remove(item)
-            else:
-                warnings.warn("Error in parsing multigates on collumn " + str(x))
-                raise InternalCommandException
-        if len(mult_used) > 0:
-            warnings.warn("Error in parsing multigates on collumn " + str(x))
-            raise InternalCommandException
-
-    for x in range(0, len(rows[0]["gates"])):
-        for index, row in enumerate(rows):
-            verifyGate(row["gates"][x], index, x, len(rows))
-
-    return True
-
-def refactorJSON(circuitjson):
-    """Recursive refactoring of JSON to remove empty lines and such..."""
-    madechange = False
-    #print(circuitjson)
-    rows = circuitjson["rows"]
-
-    targetlen = len(rows[0]["gates"])
-    for row in rows:
-        if len(row["gates"]) != targetlen:
-            print(circuitjson)
-            warnings.warn("Circuit json length error.")
-            raise InternalCommandException
-
-    removecols = []
-    depth = len(rows[0]["gates"])
-    for col in range(0, depth):
-        allempty = True
-        for index, row in enumerate(rows):
-            gatejson = row["gates"][col]
-            gate = gatejson["type"]
-
-            if gate != "empty":
-                allempty = False
-
-        if allempty:
-            removecols.append(col)
-
-    removecols.reverse()
-
-    for col in removecols:
-        for row in rows:
-            row["gates"].pop(col)
-            madechange = True
-
-    depth = len(rows[0]["gates"])
-    if depth > 1:
-        for col in range(1, depth):
-            for index, row in enumerate(rows):
-                gateajson = row["gates"][col-1]
-                gatebjson = row["gates"][col]
-
-                if (gateajson["type"] == "empty" and len(gatebjson.get("control", [])) == 0
-                    and gatebjson["type"] not in ["empty", "multi"]):
-                    row["gates"][col-1] = gatebjson
-                    row["gates"][col] = gateajson
-                    madechange = True
-
-    if madechange:
-        return refactorJSON(circuitjson) #recursion
-    else:
-        return circuitjson
-
-def assembleCircuit(circuitjson, depth=0):
-    """Returns a QuantumCircuit."""
-    rows = circuitjson["rows"]
-
-    from qiskit import QuantumCircuit
-    qc = QuantumCircuit(len(rows), len(rows))
-
-    if depth == 0:
-        depth = len(rows[0]["gates"])
-
-    for x in range(0, depth):
-        for index, row in enumerate(rows):
-            createGate(qc, row["gates"][x], index, x, len(rows))
-    return qc
-
-def preassembleStages(circuitjson):
-    rows = circuitjson["rows"]
-    depth = len(rows[0]["gates"])
-    circuits = []
-    for i in range(1, depth):
-        circuits.append(assembleCircuit(circuitjson, i))
-    for c in circuits:
-        print(c.draw())
-        print("----------------------------------")
-    return circuits
 
 def compileCircuit(params):
     """Converts a txt file to a JSON file"""
@@ -266,8 +127,160 @@ def compileCircuit(params):
     with open("circuits/" + fnameout + ".json", "w+") as f:
         json.dump(outjson, f, indent=4)
 
+def validateJSON(circuitjson):
+    """Loads JSON and warns if there are any errors."""
+    if "rows" not in circuitjson or len(circuitjson["rows"]) == 0:
+        warnings.warn("Malformed file. Missing rows.")
+        raise InternalCommandException
 
-def addGate(circuitjson, gate, rownum, colnum):
+    rows = circuitjson["rows"]
+    for index, row in enumerate(rows):
+        if "gates" not in row:
+            warnings.warn("Row # " + str(index) + " missing gates.")
+            raise InternalCommandException
+
+    maxlen = 0
+    for row in rows:
+        maxlen = max(len(row["gates"]), maxlen)
+
+    for row in rows:
+        for i in range(len(row["gates"]), maxlen):
+            row.append({"type": "empty"})
+
+    for rownum, row in enumerate(rows):
+        gates = row["gates"]
+        for index, gate in enumerate(gates):
+            if "type" not in gate:
+                warnings.warn("Gate in row #: " + str(rownum) + " missing gate type at gate: " + str(index))
+                raise InternalCommandException
+            if gate["type"] not in validgates:
+                warnings.warn("Gate <" + str(gate["type"]) + "> not valid.")
+                raise InternalCommandException
+
+    for x in range(0, len(rows[0]["gates"])):
+        mult_expected = []
+        mult_used = []
+        for index, row in enumerate(rows):
+            #print(row["gates"][x])
+            control = row["gates"][x].get("control", [])
+            for item in control:
+                if type(item) is int and item < len(rows):
+                    pass
+                else:
+                    warnings.warn("Gate in row " + str(index) + " at col " + str(x) + " requesting invalid control.")
+                    raise InternalCommandException
+
+        for item in mult_expected:
+            if item in mult_used:
+                mult_used.remove(item)
+            else:
+                warnings.warn("Error in parsing multigates on collumn " + str(x))
+                raise InternalCommandException
+        if len(mult_used) > 0:
+            warnings.warn("Error in parsing multigates on collumn " + str(x))
+            raise InternalCommandException
+
+    for x in range(0, len(rows[0]["gates"])):
+        for index, row in enumerate(rows):
+            verifyGate(row["gates"][x], index, x, len(rows))
+
+    return True
+
+def assembleCircuit(circuitjson, depth=0):
+    """Returns a QuantumCircuit."""
+    rows = circuitjson["rows"]
+
+    from qiskit import QuantumCircuit
+    qc = QuantumCircuit(len(rows), len(rows))
+
+    if depth == 0:
+        depth = len(rows[0]["gates"])
+
+    for x in range(0, depth):
+        for index, row in enumerate(rows):
+            createGate(qc, row["gates"][x], index, x, len(rows))
+    return qc
+
+def preassembleStages(circuitjson):
+    rows = circuitjson["rows"]
+    depth = len(rows[0]["gates"])
+    circuits = []
+    for i in range(1, depth):
+        circuits.append(assembleCircuit(circuitjson, i))
+    for c in circuits:
+        print(c.draw())
+        print("----------------------------------")
+    return circuits
+
+def checkGateLocation(circuitjson, gatejson, gaterow, targetcol): #TODO - blocked by wire vs blocked
+    """Returns true if gate (and controls) fit at current location"""
+    rows = [gaterow]
+    for item in gatejson.get("control", []):
+        rows.append(item)
+
+    for index, row in enumerate(circuitjson["rows"]):
+        if index in rows:
+            if row["gates"][targetcol]["type"] != "empty":
+                return False
+
+    # TODO - handle control wire overlap
+
+    return True
+
+def refactorJSON(circuitjson):
+    """Recursive refactoring of JSON to remove empty lines and such..."""
+    madechange = False
+    #print(circuitjson)
+    rows = circuitjson["rows"]
+
+    targetlen = len(rows[0]["gates"])
+    for row in rows:
+        if len(row["gates"]) != targetlen:
+            print(circuitjson)
+            warnings.warn("Circuit json length error.")
+            raise InternalCommandException
+
+    removecols = []
+    depth = len(rows[0]["gates"])
+    for col in range(0, depth):
+        allempty = True
+        for index, row in enumerate(rows):
+            gatejson = row["gates"][col]
+            gate = gatejson["type"]
+
+            if gate != "empty":
+                allempty = False
+
+        if allempty:
+            removecols.append(col)
+
+    removecols.reverse()
+
+    for col in removecols:
+        for row in rows:
+            row["gates"].pop(col)
+            madechange = True
+
+    depth = len(rows[0]["gates"])
+    if depth > 1:
+        for col in range(1, depth):
+            for index, row in enumerate(rows):
+                gatejson = row["gates"][col]
+                if gatejson["type"] not in ["empty", "multi"]:
+                    if checkGateLocation(circuitjson, gatejson, index, col-1):
+                        row["gates"][col-1] = gatejson
+                        row["gates"][col] = {"type": "empty"}
+                        for item in gatejson.get("control", []):
+                            rows[item]["gates"][col-1] = {"type": "multi"}
+                            rows[item]["gates"][col] = {"type": "empty"}
+                        madechange = True
+
+    if madechange:
+        return refactorJSON(circuitjson) #recursion
+    else:
+        return circuitjson
+
+def addGate(circuitjson, gate, rownum, colnum):  #TODO - update to new fitting code
     if gate["type"] in "u, cu":
         if len(gate.get("params", [])) == 0:
             gate["params"] = [0,0,0]
@@ -332,7 +345,7 @@ def addGate(circuitjson, gate, rownum, colnum):
 
 
 
-def deleteGate(circuitjson, rownum, colnum):
+def deleteGate(circuitjson, rownum, colnum): #TODO - update to new fitting code
     if (rownum is not None) and (colnum is not None):
         gatejson = circuitjson["rows"][rownum]["gates"][colnum]
 
