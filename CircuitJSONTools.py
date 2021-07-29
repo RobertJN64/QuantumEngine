@@ -225,10 +225,17 @@ def checkGateLocation(circuitjson, gatejson, gaterow, targetcol, startingcol):
         blockrows.append(item)
     controlarea = controlWireArea(gatejson, gaterow)
 
+    blockedarea = []
+    for index, row in enumerate(circuitjson["rows"]):
+        blockedarea += controlWireArea(row["gates"][targetcol], index)
+
+    if gaterow in blockedarea:
+        return False, True
 
     for index, row in enumerate(circuitjson["rows"]):
         if index == gaterow and row["gates"][targetcol]["type"] != "empty" and targetcol != startingcol:
             return False, False
+
         if index in blockrows:
             if row["gates"][targetcol]["type"] != "multi":
                 return False, False #legit block
@@ -237,7 +244,6 @@ def checkGateLocation(circuitjson, gatejson, gaterow, targetcol, startingcol):
             if row["gates"][targetcol]["type"] != "empty":
                 return False, True #wire blocked, check previous level
 
-    #Two gates can never be fully stopped by eachother's control wires
     return True, False #empty spot
 
 def placeGate(circuitjson, gatejson, gaterow, targetcol, gatestart):
@@ -282,15 +288,11 @@ def placeGate(circuitjson, gatejson, gaterow, targetcol, gatestart):
 def refactorJSON(circuitjson):
     """Recursive refactoring of JSON to remove empty lines and such..."""
     madechange = False
-    print(circuitjson)
-    from time import sleep
-    sleep(0.1)
     rows = circuitjson["rows"]
 
     targetlen = len(rows[0]["gates"])
     for row in rows:
         if len(row["gates"]) != targetlen:
-            print(circuitjson)
             warnings.warn("Circuit json length error.")
             raise InternalCommandException
 
