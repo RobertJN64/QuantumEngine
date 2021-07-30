@@ -27,3 +27,6 @@ Runs a circuit on the IBM system. Gives histogram output. (Bloch spehere is not 
 
 #editor
 Loads the circuit editor. Can edit existing files or create new ones.
+
+#kill
+Shuts down the editor + keyboard thread cleanly.

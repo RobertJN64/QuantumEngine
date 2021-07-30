@@ -14,9 +14,9 @@ print("Quantum engine started. Enter a command.")
 config_recall = True
 lastcmd = ""
 
-def main():
+def main(killflag):
     global lastcmd
-    while True:
+    while not killflag["kill"]:
         sleep(0.1)
         rawcmd = input(">> ")
 
@@ -85,6 +85,11 @@ def main():
                     else:
                         qcJSON.saveJSON(circuitjson, input("File name: "))
 
+            elif cmd == "kill":
+                verifyCMD(flags, [], params, 0, 0)
+                killflag["kill"] = True
+                print("Terminal exiting cleanly...")
+
             else:
                 raise CommandNotFoundError(cmd)
 
@@ -135,8 +140,8 @@ def handleListCmds(flags, params):
 import keyboard as k
 import threading as t
 
-def monitor():
-    while True:
+def monitor(killflag):
+    while not killflag["kill"]:
         sleep(0.01)
         if k.is_pressed('['):
             k.press_and_release("backspace")
@@ -144,7 +149,11 @@ def monitor():
             while k.is_pressed('['):
                 sleep(0.01)
 
-if __name__ == "__main__":
+def startThreads():
+    killflag = {"kill": False}
     if config_recall:
-        t.Thread(target=monitor).start()
-    main()
+        t.Thread(target=monitor, args=(killflag,)).start()
+    main(killflag)
+
+if __name__ == "__main__":
+    startThreads()

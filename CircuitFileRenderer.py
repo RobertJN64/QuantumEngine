@@ -5,12 +5,14 @@ import PygameTools
 from PygameTools import config, ClickMode, ClickLocation
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate, assembleCircuit
+from qiskit.visualization.transition_visualization import visualize_transition
 from PygameTextInput import TextInput
 import warnings
 import pygame
 
 #TODO - swap gate graphics
 #TODO - scrolling
+#TODO - live visualizations
 
 editorfig = None
 
@@ -50,6 +52,11 @@ def runDisplayLoop(circuitjson):
                 done = True
     pygame.display.quit()
 
+def blitImageCommand(screen, file, x, y, size, command):
+    screen.blit(images[file], (x, y))
+    clickLocations.append(ClickLocation(x, y, size, size, target=command, mode=ClickMode.Command))
+
+
 def editor(circuitjson):
     global editorfig
     refactorJSON(circuitjson)
@@ -70,12 +77,11 @@ def editor(circuitjson):
                                 config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, (200,0,0))
 
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
-        screen.blit(images["save.png"], (config.screenW - config.smallImageSize - 10, 5))
-        clickLocations.append(ClickLocation(config.screenW - config.smallImageSize - 10, 5, config.smallImageSize,
-                                            config.smallImageSize, target="save", mode=ClickMode.Command))
-        screen.blit(images["view.png"], (config.screenW - config.smallImageSize - 10, config.smallImageSize + 15))
-        clickLocations.append(ClickLocation(config.screenW - config.smallImageSize - 10, config.smallImageSize + 15, config.smallImageSize,
-                                            config.smallImageSize, target="view", mode=ClickMode.Command))
+
+        x = config.screenW - config.smallImageSize - 10
+        blitImageCommand(screen, "save.png", x, 5, config.smallImageSize, "save")
+        blitImageCommand(screen, "view.png", x, (config.smallImageSize+10) + 5, config.smallImageSize, "view")
+        blitImageCommand(screen, "play.png", x, (config.smallImageSize+10) * 2 + 5, config.smallImageSize, "play")
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -143,6 +149,7 @@ def editor(circuitjson):
                                     circuitjson = refactorJSON(circuitjson)
                                     done = True
                                     save = True
+
                                 elif clickLoc.target == "view":
                                     circuitjson = refactorJSON(circuitjson)
                                     if editorfig is None:
@@ -150,6 +157,22 @@ def editor(circuitjson):
                                     pyplot.ion()
                                     render(assembleCircuit(circuitjson), circuitjson, [], editorfig)
                                     editorfig.canvas.mpl_connect('close_event', cleanclose)
+
+                                elif clickLoc.target == "play":
+                                    circuitjson = refactorJSON(circuitjson)
+                                    vgates = True
+                                    for row in circuitjson["rows"]:
+                                        for gate in row["gates"]:
+                                            if gate["type"] not in ["h", "x", "y", "z", "rx", "ry", "rz"]:
+                                                vgates = False
+
+                                    if vgates:
+                                        for row in circuitjson["rows"]:
+                                            qc = assembleCircuit({"rows": [row]})
+                                            visualize_transition(qc, trace=True, spg=1, fpg=50) #TODO - run multiple
+
+                                    else: #TODO - stepthrough vis
+                                        print("Error. We don't have a visualization for those gates.")
 
                 if event.button == 3 and not paramboxopen:
                     for clickLoc in clickLocations:
