@@ -89,6 +89,7 @@ def main(killflag):
                 verifyCMD(flags, [], params, 0, 0)
                 killflag["kill"] = True
                 print("Terminal exiting cleanly...")
+                sleep(0.02)
 
             else:
                 raise CommandNotFoundError(cmd)
@@ -151,9 +152,13 @@ def monitor(killflag):
 
 def startThreads():
     killflag = {"kill": False}
+    thread:t.Thread = t.Thread()
     if config_recall:
-        t.Thread(target=monitor, args=(killflag,)).start()
+        thread = t.Thread(target=monitor, args=(killflag,))
+        thread.start()
     main(killflag)
+    if config_recall:
+        thread.join()
 
 if __name__ == "__main__":
     startThreads()

@@ -5,7 +5,8 @@ import PygameTools
 from PygameTools import config, ClickMode, ClickLocation
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate, assembleCircuit
-from qiskit.visualization.transition_visualization import visualize_transition
+#from qiskit.visualization.transition_visualization import visualize_transition
+from CustomVisualizations import visualize_transition
 from PygameTextInput import TextInput
 import warnings
 import pygame
@@ -161,18 +162,18 @@ def editor(circuitjson):
                                 elif clickLoc.target == "play":
                                     circuitjson = refactorJSON(circuitjson)
                                     vgates = True
+                                    invgate = ""
                                     for row in circuitjson["rows"]:
                                         for gate in row["gates"]:
-                                            if gate["type"] not in ["h", "x", "y", "z", "rx", "ry", "rz"]:
+                                            if gate["type"] not in ["h", "x", "y", "z", "rx", "ry", "rz", "empty"]:
+                                                invgate = gate["type"]
                                                 vgates = False
 
                                     if vgates:
-                                        for row in circuitjson["rows"]:
-                                            qc = assembleCircuit({"rows": [row]})
-                                            visualize_transition(qc, trace=True, spg=1, fpg=50) #TODO - run multiple
+                                        visualize_transition(circuitjson, trace=True, spg=1, fpg=20)
 
                                     else: #TODO - stepthrough vis
-                                        print("Error. We don't have a visualization for those gates.")
+                                        print("Error. We don't have a visualization for " + invgate + ".")
 
                 if event.button == 3 and not paramboxopen:
                     for clickLoc in clickLocations:
