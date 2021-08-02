@@ -158,7 +158,7 @@ def visualize_transition(circuitjson, trace=False, saveas=None, fpg=100, spg=2):
     time_between_frames = (spg * 1000) / fpg
 
     # quaternions of gates which don't take parameters
-    gates = {"empty": ("x", _Quaternion.from_axisangle(0 / frames_per_gate, [1, 0, 0]), "#1abc9c"),
+    gates = {"empty": ("empty", _Quaternion.from_axisangle(0 / frames_per_gate, [1, 0, 0]), "#1abc9c"),
         "x": ("x", _Quaternion.from_axisangle(np.pi / frames_per_gate, [1, 0, 0]), "#1abc9c"),
              "y": ("y", _Quaternion.from_axisangle(np.pi / frames_per_gate, [0, 1, 0]), "#2ecc71"),
              "z": ("z", _Quaternion.from_axisangle(np.pi / frames_per_gate, [0, 0, 1]), "#3498db"), "s": (

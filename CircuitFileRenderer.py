@@ -6,6 +6,7 @@ from PygameTools import config, ClickMode, ClickLocation, UIMode
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate, assembleCircuit
 from CustomVisualizations import visualize_transition
+import QCircuitSimulator as qcSIM
 from PygameTextInput import TextInput
 import warnings
 import pygame
@@ -77,9 +78,10 @@ def editor(circuitjson):
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
 
         x = config.screenW - config.smallImageSize - 10
-        blitImageCommand(screen, "save.png", x, 5, config.smallImageSize, "save")
-        blitImageCommand(screen, "view.png", x, (config.smallImageSize+10) + 5, config.smallImageSize, "view")
-        blitImageCommand(screen, "play.png", x, (config.smallImageSize+10) * 2 + 5, config.smallImageSize, "play")
+        blitImageCommand(screen, "save.png", x, (config.smallImageSize + 10) * 0 + 5, config.smallImageSize, "save")
+        blitImageCommand(screen, "view.png", x, (config.smallImageSize + 10) * 1 + 5, config.smallImageSize, "view")
+        blitImageCommand(screen, "bloch.png", x, (config.smallImageSize + 10) * 2 + 5, config.smallImageSize, "bloch")
+        blitImageCommand(screen, "play.png", x, (config.smallImageSize + 10) * 3 + 5, config.smallImageSize, "play")
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -153,10 +155,24 @@ def editor(circuitjson):
                                     if editorfig is None:
                                         editorfig = pyplot.figure()
                                     pyplot.ion()
+                                    editorfig.clf()
                                     render(assembleCircuit(circuitjson), circuitjson, [], editorfig)
                                     editorfig.canvas.mpl_connect('close_event', cleanclose)
 
                                 elif clickLoc.target == "play":
+                                    circuitjson = refactorJSON(circuitjson)
+                                    qc = assembleCircuit(circuitjson)
+                                    for i in range(0, len(circuitjson["rows"])):
+                                        qc.measure(i,i)
+                                    results = qcSIM.simulate(qc, 1000)
+                                    if editorfig is None:
+                                        editorfig = pyplot.figure()
+                                    pyplot.ion()
+                                    editorfig.clf()
+                                    qcSIM.visualize(results, qc, [], editorfig)
+                                    editorfig.canvas.mpl_connect('close_event', cleanclose)
+
+                                elif clickLoc.target == "bloch":
                                     circuitjson = refactorJSON(circuitjson)
                                     vgates = True
                                     invgate = ""

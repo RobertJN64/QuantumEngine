@@ -145,7 +145,7 @@ def validateJSON(circuitjson):
 
     for row in rows:
         for i in range(len(row["gates"]), maxlen):
-            row.append({"type": "empty"})
+            row["gates"].append({"type": "empty"})
 
     for rownum, row in enumerate(rows):
         gates = row["gates"]

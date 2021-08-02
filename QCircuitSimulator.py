@@ -19,11 +19,12 @@ def loadaccount():
     provideractive = True
 threading.Thread(target=loadaccount).start()
 
-def visualize(result, circuit, flags):
+def visualize(result, circuit, flags, fig=None):
     if '-t' in flags:
         print(result.get_counts(circuit))
     else:
-        fig = pyplot.figure()
+        if fig is None:
+            fig = pyplot.figure()
         plt = fig.add_subplot()
         plot_histogram(result.get_counts(circuit), ax=plt)
         if '-b' in flags:
