@@ -16,7 +16,7 @@
 Visualization function for animation of state transitions by applying gates to single qubit.
 """
 
-from math import sin, cos, acos, sqrt, radians
+from math import sin, cos, acos, sqrt, radians, degrees
 import numpy as np
 
 def _normalize(v, tolerance=0.00001):
@@ -134,7 +134,7 @@ def visualize_transition(circuitjson, trace=False, saveas=None, fpg=100, spg=2):
         fpg (int): Frames per gate. Finer control over animation smoothness and computational
             needs to render the animation. Works well for tkinter GUI as it is, for jupyter GUI
             it might be preferable to choose fpg between 5-30.
-        spg (int): Seconds per gate. How many seconds should animation of individual gate
+        spg (float): Seconds per gate. How many seconds should animation of individual gate
             transitions take.
 
     Returns:
@@ -200,13 +200,13 @@ def visualize_transition(circuitjson, trace=False, saveas=None, fpg=100, spg=2):
                 theta = radians(gate["params"][0])
                 if gate["type"] == "rx":
                     quaternion = _Quaternion.from_axisangle(theta / frames_per_gate, [1, 0, 0])
-                    temprow.append(("rx:" + str(theta), quaternion, "#16a085"))
+                    temprow.append(("rx:" + str(round(degrees(theta))), quaternion, "#16a085"))
                 elif gate["type"] == "ry":
                     quaternion = _Quaternion.from_axisangle(theta / frames_per_gate, [0, 1, 0])
-                    temprow.append(("ry:" + str(theta), quaternion, "#27ae60"))
+                    temprow.append(("ry:" + str(round(degrees(theta))), quaternion, "#27ae60"))
                 elif gate["type"] == "rz":
                     quaternion = _Quaternion.from_axisangle(theta / frames_per_gate, [0, 0, 1])
-                    temprow.append(("rz:" + str(theta), quaternion, "#2980b9"))
+                    temprow.append(("rz:" + str(round(degrees(theta))), quaternion, "#2980b9"))
 
         list_of_circuit_gates.append(temprow)
 
@@ -278,15 +278,15 @@ def visualize_transition(circuitjson, trace=False, saveas=None, fpg=100, spg=2):
                 spherelist[k].point_color = namespacelist[k].colors
                 spherelist[k].point_marker = "o"
 
-                #annotation_text = list_of_circuit_gates[k][gate_counter][0]
-                #annotationvector = [1.4, -0.45, 1.7]
-                #spherelist[k].add_annotation(
-                    #annotationvector,
-                    #annotation_text,
-                    #color=list_of_circuit_gates[k][gate_counter][2],
-                    #fontsize=30,
-                    #horizontalalignment="left",
-                #)
+                annotation_text = list_of_circuit_gates[k][gate_counter][0]
+                annotationvector = [1.4, -0.45, 1.7]
+                spherelist[k].add_annotation(
+                    annotationvector,
+                    annotation_text,
+                    color=list_of_circuit_gates[k][gate_counter][2],
+                    fontsize=30,
+                    horizontalalignment="left",
+                )
 
                 spherelist[k].make_sphere()
 

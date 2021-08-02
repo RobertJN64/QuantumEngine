@@ -89,7 +89,7 @@ def main(killflag):
                 verifyCMD(flags, [], params, 0, 0)
                 killflag["kill"] = True
                 print("Terminal exiting cleanly...")
-                sleep(0.02)
+                sleep(0.02) #for thread to exit
 
             else:
                 raise CommandNotFoundError(cmd)

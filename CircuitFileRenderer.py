@@ -2,10 +2,9 @@ import matplotlib.pyplot as pyplot
 import RenderBackend as Render
 from RenderBackend import images, clickLocations, warningMessage
 import PygameTools
-from PygameTools import config, ClickMode, ClickLocation
+from PygameTools import config, ClickMode, ClickLocation, UIMode
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate, assembleCircuit
-#from qiskit.visualization.transition_visualization import visualize_transition
 from CustomVisualizations import visualize_transition
 from PygameTextInput import TextInput
 import warnings
@@ -13,7 +12,6 @@ import pygame
 
 #TODO - swap gate graphics
 #TODO - scrolling
-#TODO - live visualizations
 
 editorfig = None
 
@@ -57,13 +55,12 @@ def blitImageCommand(screen, file, x, y, size, command):
     screen.blit(images[file], (x, y))
     clickLocations.append(ClickLocation(x, y, size, size, target=command, mode=ClickMode.Command))
 
-
 def editor(circuitjson):
     global editorfig
     refactorJSON(circuitjson)
     hand = ""
     handmode = ClickMode.Empty
-    paramboxopen = False
+    currentmode = UIMode.Main
     parambox = TextInput()
     screen = PygameTools.createPygameWindow()
     done = False
@@ -116,7 +113,7 @@ def editor(circuitjson):
             if event.type == pygame.QUIT:
                 done = True
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and not paramboxopen: #left click:
+                if event.button == 1 and currentmode == UIMode.Main: #left click:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
                             handmode = clickLoc.mode
@@ -170,19 +167,19 @@ def editor(circuitjson):
                                                 vgates = False
 
                                     if vgates:
-                                        visualize_transition(circuitjson, trace=True, spg=1, fpg=20)
+                                        visualize_transition(circuitjson, trace=True, spg=0.5, fpg=25)
 
                                     else: #TODO - stepthrough vis
                                         print("Error. We don't have a visualization for " + invgate + ".")
 
-                if event.button == 3 and not paramboxopen:
+                if event.button == 3 and currentmode == UIMode.Main:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
                             if clickLoc.mode == ClickMode.MoveGate:
                                 if clickLoc.target["type"][-1] in ["x", "y", "z", "u"]:
                                     handmode = ClickMode.EditParams
                                     hand = clickLoc.target
-                                    paramboxopen = True
+                                    currentmode = UIMode.ParamBoxOpen
                                     params = hand.get("params", [])
                                     p = []
                                     for param in params:
@@ -193,7 +190,7 @@ def editor(circuitjson):
                                     parambox.cursor_position = len(parambox.input_string)
 
             if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1 and not paramboxopen:
+                if event.button == 1 and currentmode == UIMode.Main:
                     if hand != "":
                         if handmode == ClickMode.AddGate:
                             row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
@@ -215,9 +212,9 @@ def editor(circuitjson):
                 config.screenW = event.w
                 config.screenH = event.h
 
-        if paramboxopen:
+        if currentmode == UIMode.ParamBoxOpen:
             if parambox.update(events):
-                paramboxopen = False
+                currentmode = UIMode.Main
                 newparam = parambox.get_text()
                 parambox.clear_text()
                 try:
@@ -256,6 +253,7 @@ def editor(circuitjson):
     pyplot.show()
     return save, circuitjson
 
+#region drop funcs
 def drawDropBox(screen, row, col, t):
     gatex = col * config.gateSpacing + config.leftWirePos + config.gateSpacing / 2 + 10
     gatey = row * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
@@ -344,3 +342,4 @@ def getDeletePos(x, y, circuitjson, mindistance):
             col = None
 
     return row, col
+#endregion

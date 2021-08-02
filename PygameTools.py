@@ -61,6 +61,11 @@ class ClickMode:
     EditParams = 7,
     Command = 8 #for custom commands like save, etc.
 
+class UIMode:
+    Main = 0,
+    ParamBoxOpen = 1,
+    ControlWireConfig = 2
+
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):
         self.x = x
