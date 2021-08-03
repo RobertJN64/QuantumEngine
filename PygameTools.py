@@ -59,7 +59,8 @@ class ClickMode:
     AddRow = 5,
     DeleteRow = 6,
     EditParams = 7,
-    Command = 8 #for custom commands like save, etc.
+    Command = 8, #for custom commands like save, etc.
+    ControlDot = 9
 
 class UIMode:
     Main = 0,

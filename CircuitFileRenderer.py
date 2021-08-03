@@ -56,8 +56,14 @@ def blitImageCommand(screen, file, x, y, size, command):
     screen.blit(images[file], (x, y))
     clickLocations.append(ClickLocation(x, y, size, size, target=command, mode=ClickMode.Command))
 
-def editor(circuitjson):
+defaultgates = [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]]
+
+def editor(circuitjson, title="Custom Circuit Render", gates=None, minrows=1, maxrows=50, allowcontrol = True):
     global editorfig
+
+    if gates is None:
+        gates = defaultgates
+
     refactorJSON(circuitjson)
     hand = ""
     handmode = ClickMode.Empty
@@ -70,8 +76,14 @@ def editor(circuitjson):
     while not done:
         clickLocations.clear()
         screen.fill(config.screenColor)
-        Render.drawCircuitToScreen(screen, circuitjson, "Custom Circuit Render")
-        Render.drawGateToolbox(screen, [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]], ["control", "delete"])
+        Render.drawCircuitToScreen(screen, circuitjson, title, minrows=minrows, maxrows=maxrows)
+
+        tools = []
+        if allowcontrol:
+            tools.append("control")
+        tools.append("delete")
+
+        Render.drawGateToolbox(screen, gates, tools)
         PygameTools.displayText(screen, warningMessage.display(), config.screenW/2,
                                 config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, (200,0,0))
 
@@ -108,6 +120,14 @@ def editor(circuitjson):
                 row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                 if row is not None and col is not None and col != "end":
                     drawDropBox(screen, row, col, "box")
+
+            elif handmode == ClickMode.AddControl:
+                pygame.draw.rect(screen, config.toolBackgroundColor,
+                                 (x - config.gateSize / 2, y - config.gateSize / 2, config.gateSize, config.gateSize))
+                pygame.draw.circle(screen, (0, 0, 0), (x, y), 10)
+                row, col = getDeletePos(x, y, circuitjson, config.gateSize)
+                if row is not None and col is not None and col != "end":
+                    drawDropBox(screen, row, col, "box")
         #endregion
 
         events = pygame.event.get()
@@ -138,12 +158,27 @@ def editor(circuitjson):
                                     circuitjson = refactorJSON(circuitjson)
                                 else:
                                     warningMessage.warn(clickLoc.target, 100)
+
                             elif clickLoc.mode == ClickMode.DeleteRow:
                                 if clickLoc.target == "del":
                                     circuitjson["rows"].pop()
                                     circuitjson = refactorJSON(circuitjson)
                                 else:
                                     warningMessage.warn(clickLoc.target, 100)
+
+                            elif clickLoc.mode == ClickMode.AddControl:
+                                hand = "addcontrol"
+
+                            elif clickLoc.mode == ClickMode.ControlDot:
+                                controlrow, colnum, gaterow = clickLoc.target
+                                gatejson = circuitjson["rows"][gaterow]["gates"][colnum]
+                                control = gatejson.get("control", [])
+                                control.append(controlrow)
+                                gatejson["control"] = control
+                                circuitjson["rows"][gaterow]["gates"][colnum] = updateGate(gatejson)
+                                circuitjson["rows"][controlrow]["gates"][colnum] = {"type": "multi"}
+                                circuitjson = refactorJSON(circuitjson)
+
                             elif clickLoc.mode == ClickMode.Command:
                                 if clickLoc.target == "save":
                                     circuitjson = refactorJSON(circuitjson)
@@ -216,6 +251,35 @@ def editor(circuitjson):
                             row, col = getDeletePos(x, y, circuitjson, config.gateSize)
                             deleteGate(circuitjson, row, col)
                             circuitjson = refactorJSON(circuitjson)
+                        elif handmode == ClickMode.AddControl:
+                            rownum, col = getDeletePos(x, y, circuitjson, config.gateSize)
+
+                            if rownum is not None and col is not None:
+                                gatejson = circuitjson["rows"][rownum]["gates"][col]
+                                if gatejson["type"] not in ["empty", "multi", "m", "barrier", "reset", "puzzle", "i"]:
+                                    control = gatejson.get("control", [])
+                                    allempty = True
+                                    for index, row in enumerate(circuitjson["rows"]):
+                                        if row["gates"][col]["type"] == "empty" or index == rownum:
+                                            pass
+                                        else:
+                                            allempty = False
+
+                                    for index, row in enumerate(circuitjson["rows"]):
+                                        if allempty:
+                                            if index != rownum and index not in control:
+                                                row["gates"][col] = {"type": "addcontrol", "control": [rownum]}
+                                        else:
+                                            if index == rownum:
+                                                row["gates"].insert(col + 1, {"type": "empty"})
+                                            elif index in control:
+                                                row["gates"].insert(col + 1, {"type": "empty"})
+                                            else:
+                                                row["gates"].insert(col, {"type": "addcontrol", "control": [rownum]})
+
+                                else:
+                                    warningMessage.warn("Can't add control to gate.", 100)
+
                         elif handmode == ClickMode.MoveGate:
                             row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
                             addGate(circuitjson, hand, row, col)

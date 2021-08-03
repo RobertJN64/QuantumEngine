@@ -9,6 +9,7 @@ print("Loading qiskit version:", qiskit.version.get_version_info())
 import CircuitJSONTools as qcJSON
 import CircuitFileRenderer as qcRENDER
 import QCircuitSimulator as qcSIMULATOR
+import Puzzle as qcPUZZLE
 print("Quantum engine started. Enter a command.")
 
 config_recall = True
@@ -91,6 +92,10 @@ def main(killflag):
                 print("Terminal exiting cleanly...")
                 sleep(0.02) #for thread to exit
 
+            elif cmd == "puzzle":
+                verifyCMD(flags, [], params, 1, 1)
+                qcPUZZLE.loadPuzzle(params[0])
+
             else:
                 raise CommandNotFoundError(cmd)
 
@@ -100,6 +105,8 @@ def main(killflag):
             print("Error while running command...")
             warnings.resetwarnings()
             pass #this should already throw a warning
+        except KeyboardInterrupt:
+            killflag["kill"] = True
         except (Exception,):
             tb.print_exc()
 
@@ -144,17 +151,17 @@ import threading as t
 def monitor(killflag):
     while not killflag["kill"]:
         sleep(0.01)
-        if k.is_pressed('['):
+        if k.is_pressed('\\'):
             k.press_and_release("backspace")
             k.write(lastcmd)
-            while k.is_pressed('['):
+            while k.is_pressed('\\'):
                 sleep(0.01)
 
 def startThreads():
     killflag = {"kill": False}
     thread:t.Thread = t.Thread()
     if config_recall:
-        thread = t.Thread(target=monitor, args=(killflag,))
+        thread = t.Thread(target=monitor, args=(killflag,), daemon=True)
         thread.start()
     main(killflag)
     if config_recall:

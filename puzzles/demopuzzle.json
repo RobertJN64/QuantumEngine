@@ -1,13 +1,35 @@
 {
   "name": "Bell Circuit Part A",
-  "unlocked gates": {
-    "x": ["x"],
-    "y": ["y"],
-    "z": ["z"],
-    "h": ["h"],
-    "puzzle": ["puzzle"]
-  },
-  "min_lines": 1,
-  "max_lines": 2,
-  "start_lines": 1
+  "unlocked-gates": [["x", "y", "z", "h"]],
+  "allowcontrol": false,
+  "minrows": 2,
+  "maxrows": 2,
+  "circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "h"
+          },
+          {
+            "type": "multi"
+          }
+        ]
+      },
+      {
+        "gates": [
+          {
+            "type": "empty"
+          },
+          {
+            "type": "cx",
+            "control": [
+              0
+            ]
+          }
+
+        ]
+      }
+    ]
+  }
 }

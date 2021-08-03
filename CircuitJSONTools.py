@@ -153,9 +153,11 @@ def validateJSON(circuitjson):
             if "type" not in gate:
                 warnings.warn("Gate in row #: " + str(rownum) + " missing gate type at gate: " + str(index))
                 raise InternalCommandException
+
             if gate["type"] not in validgates:
                 warnings.warn("Gate <" + str(gate["type"]) + "> not valid.")
                 raise InternalCommandException
+
 
     for x in range(0, len(rows[0]["gates"])):
         mult_expected = []
@@ -306,6 +308,11 @@ def refactorJSON(circuitjson):
 
             if gate != "empty":
                 allempty = False
+
+            if gate == "addcontrol":
+                gatejson["type"] = "empty"
+                gatejson["control"] = []
+                madechange = True
 
         if allempty:
             removecols.append(col)

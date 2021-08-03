@@ -132,15 +132,20 @@ def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 50):
             gatey = rownum * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
 
             gate = gatejson["type"]
-            if "control" in gatejson:
+            if "control" in gatejson and gate != "addcontrol":
                 for rowid in gatejson["control"]:
                     controly = rowid * config.wireSpace + config.wireStartingY + 0.5 * config.wireEndHeight
                     connectControl(screen, getGateColor(gate), gatex, gatey, controly)
 
-            if gate not in ["empty", "multi"]:
+            if gate not in ["empty", "multi", "addcontrol"]:
                 drawGate(screen, gatejson, gatex, gatey)
                 clickLocations.append(ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2, config.gateSize,
                                                     config.gateSize, gatejson, ClickMode.MoveGate))
+
+            if gate == "addcontrol":
+                pygame.draw.circle(screen, (0,0,0), (gatex, gatey), config.controlCircleRadius)
+                clickLocations.append(ClickLocation(gatex-config.gateSize/2, gatey-config.gateSize/2, config.gateSize,
+                                                    config.gateSize, [rownum, colnum, gatejson["control"][0]], ClickMode.ControlDot))
 
 def drawPlusMinus(screen, filename, x, y, target, mode):
     screen.blit(images[filename], (x, y))
@@ -272,4 +277,7 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
         if gate == "delete":
             clickLocations.append(ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
                                                 config.gateSize, config.gateSize, gate, ClickMode.DeleteGate))
+        elif gate == "control":
+            clickLocations.append(ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
+                                                config.gateSize, config.gateSize, gate, ClickMode.AddControl))
         gatepos += config.gateSpacing
