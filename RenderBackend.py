@@ -38,7 +38,7 @@ def verifyGateGraphics():
                         ["minus.png", config.smallImageSize], ["redplus.png", config.smallImageSize],
                         ["redminus.png", config.smallImageSize], ["save.png", config.smallImageSize],
                         ["view.png", config.smallImageSize], ["play.png", config.smallImageSize],
-                        ["bloch.png", config.smallImageSize]]:
+                        ["bloch.png", config.smallImageSize], ["check.png", config.smallImageSize]]:
         img = pygame.image.load("resources/images/" + image)
         img = pygame.transform.smoothscale(img, (round(size), round(size)))
         images[image] = img

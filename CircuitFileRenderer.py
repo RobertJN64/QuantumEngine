@@ -1,4 +1,5 @@
 import matplotlib.pyplot as pyplot
+from Puzzle import PuzzleValidator
 import RenderBackend as Render
 from RenderBackend import images, clickLocations, warningMessage
 import PygameTools
@@ -58,11 +59,16 @@ def blitImageCommand(screen, file, x, y, size, command):
 
 defaultgates = [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]]
 
-def editor(circuitjson, title="Custom Circuit Render", gates=None, minrows=1, maxrows=50, allowcontrol = True):
+def editor(circuitjson, title="Custom Circuit Render", gates=None,
+           minrows=1, maxrows=50, allowcontrol = True, allowparams = True, ispuzzle=False,
+           validator:PuzzleValidator=None):
     global editorfig
 
     if gates is None:
         gates = defaultgates
+    if ispuzzle and validator is None:
+        warnings.warn("Puzzle missing validator")
+        raise InternalCommandException
 
     refactorJSON(circuitjson)
     hand = ""
@@ -94,6 +100,8 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None, minrows=1, ma
         blitImageCommand(screen, "view.png", x, (config.smallImageSize + 10) * 1 + 5, config.smallImageSize, "view")
         blitImageCommand(screen, "bloch.png", x, (config.smallImageSize + 10) * 2 + 5, config.smallImageSize, "bloch")
         blitImageCommand(screen, "play.png", x, (config.smallImageSize + 10) * 3 + 5, config.smallImageSize, "play")
+        if ispuzzle:
+            blitImageCommand(screen, "check.png", x, (config.smallImageSize + 10) * 4 + 5, config.smallImageSize, "check")
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -223,10 +231,18 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None, minrows=1, ma
                                     else: #TODO - stepthrough vis
                                         print("Error. We don't have a visualization for " + invgate + ".")
 
+                                elif clickLoc.target == "check":
+                                    circuitjson = refactorJSON(circuitjson)
+                                    qc = assembleCircuit(circuitjson)
+                                    if validator.validate(qc):
+                                        print("Circuit solved puzzle!")
+                                    else:
+                                        print("Try again!")
+
                 if event.button == 3 and currentmode == UIMode.Main:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
-                            if clickLoc.mode == ClickMode.MoveGate:
+                            if clickLoc.mode == ClickMode.MoveGate and allowparams:
                                 if clickLoc.target["type"][-1] in ["x", "y", "z", "u"]:
                                     handmode = ClickMode.EditParams
                                     hand = clickLoc.target
