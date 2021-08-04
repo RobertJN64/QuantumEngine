@@ -50,6 +50,7 @@ def validateNone(circuita, circuitb):
 class PuzzleValidator:
     def __init__(self, puzzlejson):
         self.correctcircuitjson = puzzlejson["validation-circuit"]
+        self.validationMode = puzzlejson["validation-mode"]
         self.validationFunction = validateNone
         if puzzlejson["validation-mode"] == "statevector":
             self.validationFunction = validateStatevector

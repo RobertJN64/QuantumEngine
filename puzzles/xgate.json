@@ -1,0 +1,31 @@
+{
+  "name": "X Gate",
+  "info": "Drag an x gate onto the wire to invert the state from |0> to |1>.\nThe x gate is also known as the not gate because it inverts the state of the qubit.",
+  "unlocked-gates": [["x"]],
+  "allowcontrol": false,
+  "allowparams": false,
+  "minrows": 1,
+  "maxrows": 1,
+  "circuit": {
+    "rows": [
+      {
+        "gates": [
+
+        ]
+      }
+    ]
+  },
+
+  "validation-mode": "statevector",
+  "validation-circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "x"
+          }
+        ]
+      }
+    ]
+  }
+}

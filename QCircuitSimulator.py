@@ -33,6 +33,11 @@ def visualize(result, circuit, flags, fig=None):
 
         pyplot.show()
 
+def save_bloch_multivector(result, circuit, fname):
+    fig = plot_bloch_multivector(result.get_statevector(circuit))
+    fig.savefig('resources/dynamic/' + fname + '.png', transparent=True)
+    pyplot.close()
+
 
 def simulate(circuit, shots=1000):
     simulator = Aer()

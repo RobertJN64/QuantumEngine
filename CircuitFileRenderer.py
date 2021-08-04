@@ -101,7 +101,10 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
         blitImageCommand(screen, "bloch.png", x, (config.smallImageSize + 10) * 2 + 5, config.smallImageSize, "bloch")
         blitImageCommand(screen, "play.png", x, (config.smallImageSize + 10) * 3 + 5, config.smallImageSize, "play")
         if ispuzzle:
-            blitImageCommand(screen, "check.png", x, (config.smallImageSize + 10) * 4 + 5, config.smallImageSize, "check")
+            blitImageCommand(screen, "check.png", x, (config.smallImageSize + 10) * 4 + 5, config.smallImageSize,
+                             "check")
+            blitImageCommand(screen, "target.png", x, (config.smallImageSize + 10) * 6 + 5, config.smallImageSize,
+                             "target")
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -238,6 +241,17 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                         print("Circuit solved puzzle!")
                                     else:
                                         print("Try again!")
+
+                                elif clickLoc.target == "target":
+                                    circuitjson = refactorJSON(circuitjson)
+                                    qca = assembleCircuit(circuitjson)
+                                    qcb = assembleCircuit(validator.correctcircuitjson)
+                                    resultsa = qcSIM.simulate(qca, 1000)
+                                    resultsb = qcSIM.simulate(qcb, 1000)
+                                    if validator.validationMode == "statevector":
+                                        qcSIM.save_bloch_multivector(resultsa, qca, "blocha")
+                                        qcSIM.save_bloch_multivector(resultsb, qcb, "blochb")
+
 
                 if event.button == 3 and currentmode == UIMode.Main:
                     for clickLoc in clickLocations:

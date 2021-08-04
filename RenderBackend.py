@@ -34,11 +34,11 @@ with open("resources/gategraphics.json") as f:
 
 images = {}
 def verifyGateGraphics():
-    for image, size in [["delete.png", config.imageSize], ["plus.png", config.smallImageSize],
-                        ["minus.png", config.smallImageSize], ["redplus.png", config.smallImageSize],
-                        ["redminus.png", config.smallImageSize], ["save.png", config.smallImageSize],
-                        ["view.png", config.smallImageSize], ["play.png", config.smallImageSize],
-                        ["bloch.png", config.smallImageSize], ["check.png", config.smallImageSize]]:
+    s = config.smallImageSize
+    i = config.imageSize
+    for image, size in [["delete.png", i], ["plus.png", s], ["minus.png", s], ["redplus.png", s], ["redminus.png", s],
+                        ["save.png", s], ["view.png", s], ["play.png", s], ["bloch.png", s], ["check.png", s],
+                        ["target.png", s]]:
         img = pygame.image.load("resources/images/" + image)
         img = pygame.transform.smoothscale(img, (round(size), round(size)))
         images[image] = img
