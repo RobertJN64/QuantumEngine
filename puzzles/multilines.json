@@ -1,0 +1,62 @@
+{
+  "name": "Multiple Lines",
+  "info": "Set each line correctly",
+  "unlocked-gates": [["x", "y", "z"]],
+  "allowcontrol": false,
+  "allowparams": true,
+  "minrows": 1,
+  "maxrows": 5,
+  "circuit": {
+    "rows": [
+      {
+        "gates": [
+
+        ]
+      },
+      {
+        "gates": [
+
+        ]
+      },
+      {
+        "gates": [
+
+        ]
+      }
+    ]
+  },
+
+  "validation-mode": "statevector",
+  "validation-circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "ry",
+            "params": [90]
+          }
+        ]
+      },
+      {
+        "gates": [
+          {
+            "type": "ry",
+            "params": [90]
+          },
+          {
+            "type": "rz",
+            "params": [45]
+          }
+        ]
+      },
+      {
+        "gates": [
+          {
+            "type": "rx",
+            "params": [-90]
+          }
+        ]
+      }
+    ]
+  }
+}

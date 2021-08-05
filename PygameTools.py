@@ -43,6 +43,8 @@ class PygameConfig:
 
             self.gateDropColor = configjson["gate-drop-color"]
 
+            self.blochSphereHeight = configjson["bloch-sphere-height"]
+
         except KeyError:
             warnings.warn("Malformed pygame config.")
             warnings.warn(traceback.format_exc())
@@ -65,7 +67,8 @@ class ClickMode:
 class UIMode:
     Main = 0,
     ParamBoxOpen = 1,
-    ControlWireConfig = 2
+    ControlWireConfig = 2,
+    TargetBoxOpen = 3
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):

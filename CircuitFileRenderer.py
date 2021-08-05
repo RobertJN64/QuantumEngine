@@ -79,6 +79,13 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
     done = False
     save = False
     clock = pygame.time.Clock()
+
+    blocha = None
+    blochb = None
+
+    blochheight = config.blochSphereHeight
+    blochwidth = 0
+
     while not done:
         clickLocations.clear()
         screen.fill(config.screenColor)
@@ -145,7 +152,8 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
         for event in events:
             if event.type == pygame.QUIT:
                 done = True
-            if event.type == pygame.MOUSEBUTTONDOWN:
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and currentmode == UIMode.Main: #left click:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
@@ -251,9 +259,30 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     if validator.validationMode == "statevector":
                                         qcSIM.save_bloch_multivector(resultsa, qca, "blocha")
                                         qcSIM.save_bloch_multivector(resultsb, qcb, "blochb")
+                                    blocha = pygame.image.load("resources/dynamic/blocha.png")
+                                    blochb = pygame.image.load("resources/dynamic/blochb.png")
+                                    recta = blocha.get_rect()
+                                    rectb = blochb.get_rect()
 
+                                    wa = round(recta.w * (blochheight / recta.h))
+                                    wb = round(rectb.w * (blochheight / rectb.h))
 
-                if event.button == 3 and currentmode == UIMode.Main:
+                                    blochwidth = max(wa, wb)
+
+                                    blocha = pygame.transform.smoothscale(blocha, (wa, blochheight))
+                                    blochb = pygame.transform.smoothscale(blochb, (wb, blochheight))
+
+                                    currentmode = UIMode.TargetBoxOpen
+
+                elif event.button == 1 and currentmode == UIMode.TargetBoxOpen: #left click:
+                    for clickLoc in clickLocations:
+                        if clickLoc.checkClick(x, y):
+                            handmode = clickLoc.mode
+                            if clickLoc.mode == ClickMode.Command:
+                                if clickLoc.target == "target":
+                                    currentmode = UIMode.Main
+
+                elif event.button == 3 and currentmode == UIMode.Main:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
                             if clickLoc.mode == ClickMode.MoveGate and allowparams:
@@ -270,7 +299,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     parambox.input_string = ", ".join(p)
                                     parambox.cursor_position = len(parambox.input_string)
 
-            if event.type == pygame.MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1 and currentmode == UIMode.Main:
                     if hand != "":
                         if handmode == ClickMode.AddGate:
@@ -318,7 +347,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                     hand = ""
                     handmode = ClickMode.Empty
 
-            if event.type == pygame.VIDEORESIZE:
+            elif event.type == pygame.VIDEORESIZE:
                 config.screenW = event.w
                 config.screenH = event.h
 
@@ -349,6 +378,20 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
             PygameTools.displayText(screen, "Enter param: ", config.screenW/2,
                                     config.screenH/2 - 75, 25, (0,0,0))
             screen.blit(surf, (config.screenW/2 - 125, config.screenH/2 - 50))
+
+        elif currentmode == UIMode.TargetBoxOpen:
+            windoww = blochwidth + 125
+            windowh = blochheight * 2 + 30
+            pygame.draw.rect(screen, (255,255,255), (config.screenW/2 - windoww/2, config.screenH/2 - windowh/2,
+                                                     windoww, windowh))
+            pygame.draw.rect(screen, (0,0,0), ((config.screenW/2 - windoww/2, config.screenH/2 - windowh/2,
+                                                     windoww, windowh)), width=3)
+            screen.blit(blocha, (config.screenW/2 - windoww/2 + 75, config.screenH/2 - windowh/2 + 10))
+            screen.blit(blochb, (config.screenW/2 - windoww/2 + 75, config.screenH/2 - windowh/2 + blochheight + 20))
+            PygameTools.displayText(screen, "Current:", config.screenW/2 - windoww/2 + 20,
+                                    config.screenH/2 - windowh/2 + blochheight * 0.5 - 10, 25, (0,0,0), mode="topleft")
+            PygameTools.displayText(screen, "Target:", config.screenW / 2 - windoww / 2 + 20,
+                                    config.screenH / 2 - windowh / 2 + blochheight * 1.5, 25, (0, 0, 0), mode="topleft")
 
         if editorfig is not None:
             editorfig.canvas.flush_events()
