@@ -4,6 +4,7 @@ from qiskit.providers.ibmq import least_busy
 from qiskit import IBMQ
 from qiskit.providers.aer import AerSimulator as Aer
 from qiskit.tools.monitor import job_monitor
+from qiskit import QuantumCircuit
 from errors import InternalCommandException
 from qiskit.visualization import plot_histogram, plot_bloch_multivector
 import warnings
@@ -38,10 +39,15 @@ def save_bloch_multivector(result, circuit, fname):
     fig.savefig('resources/dynamic/' + fname + '.png', transparent=True)
     pyplot.close()
 
+def add_measurements(circuit: QuantumCircuit):
+    for i in range(circuit.num_qubits):
+        circuit.measure(i, i)
+    return circuit
 
 def simulate(circuit, shots=1000):
     simulator = Aer()
     circuit.save_statevector()
+    circuit = add_measurements(circuit)
     compiled_circuit = transpile(circuit, simulator)
     job = simulator.run(compiled_circuit, shots=shots)
     result = job.result()
@@ -64,6 +70,7 @@ def sendToIBM(circuit, shots=1000, useSimulator=False):
           " with version ", config.backend_version, sep="")
     print("Backend has", config.n_qubits, "qubits,", circuit.num_qubits, "needed.")
     print("Backend is running:", backend.status().pending_jobs, "jobs waiting.")
+    circuit = add_measurements(circuit)
     job = execute(circuit, backend, shots=shots)
     print("Job Queued")
     job_monitor(job)

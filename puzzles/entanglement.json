@@ -1,0 +1,55 @@
+{
+  "name": "Entanglement",
+  "info": "Add a controlled xgate to create entanglement.",
+  "unlocked-gates": [["h", "x"]],
+  "allowcontrol": true,
+  "allowparams": false,
+  "minrows": 2,
+  "maxrows": 2,
+  "circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "h"
+          }
+        ]
+      },
+      {
+        "gates": [
+          {
+            "type": "h"
+          }
+        ]
+      }
+    ]
+  },
+
+  "validation-mode": "results",
+  "tolerance": 0.1,
+  "validation-circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "h"
+          },
+          {
+            "type": "empty"
+          }
+        ]
+      },
+      {
+        "gates": [
+          {
+            "type": "empty"
+          },
+          {
+            "type": "cx",
+            "control": [0]
+          }
+        ]
+      }
+    ]
+  }
+}

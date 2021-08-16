@@ -95,6 +95,8 @@ def createGate(qc: QuantumCircuit, gatejson: dict, row: int, col:int, rowcount:i
         qc.reset(row)
     elif gate == "m":
         qc.measure(row,row)
+        if not gatejson.get("nowarning", False):
+            warnings.warn("Circuit adding a measure gate. This might be redundand and could interfere with statevector validation.")
     elif gate == "i":
         qc.i(row)
 

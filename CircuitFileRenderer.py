@@ -216,8 +216,6 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                 elif clickLoc.target == "play":
                                     circuitjson = refactorJSON(circuitjson)
                                     qc = assembleCircuit(circuitjson)
-                                    for i in range(0, len(circuitjson["rows"])):
-                                        qc.measure(i,i)
                                     results = qcSIM.simulate(qc, 1000)
                                     if editorfig is None:
                                         editorfig = pyplot.figure()
@@ -239,7 +237,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     if vgates:
                                         visualize_transition(circuitjson, trace=True, spg=0.5, fpg=25)
 
-                                    else: #TODO - stepthrough vis
+                                    else: #TODO - qsphere vis
                                         print("Error. We don't have a visualization for " + invgate + ".")
 
                                 elif clickLoc.target == "check":

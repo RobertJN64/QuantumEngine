@@ -29,7 +29,9 @@ def validatePuzzle(puzzlejson):
         warnings.warn("Puzzle row count not in valid range!")
         raise InternalCommandException
 
-def validateStatevector(circuita, circuitb):
+def validateStatevector(circuita, circuitb, tolerance):
+    if tolerance == tolerance:
+        pass
     a = simulate(circuita)
     b = simulate(circuitb)
 
@@ -37,28 +39,44 @@ def validateStatevector(circuita, circuitb):
     sb = Statevector(b.get_statevector(circuitb))
     return sa.equiv(sb)
 
-def validateResults(circuita, circuitb):
-    return True
-    #TODO - validate results
+def validateResults(circuita, circuitb, tolerance):
+    a = simulate(circuita)
+    b = simulate(circuitb)
 
-def validateNone(circuita, circuitb):
-    if circuita == circuitb:
+    da = a.get_counts(circuita)
+    db = b.get_counts(circuitb)
+
+    for key, valuea in da.items():
+        valueb = db.get(key, 0)
+        if abs(valuea - valueb) > tolerance * 1000: #number of shots
+            return False
+
+    for key, valueb in db.items():
+        valuea = da.get(key, 0)
+        if abs(valuea - valueb) > tolerance * 1000: #number of shots
+            return False
+
+    return True
+
+def validateNone(circuita, circuitb, tolerance):
+    if circuita == circuitb or tolerance == tolerance:
         pass
     warnings.warn("Validation none error case triggered!")
     raise InternalCommandException
 
 class PuzzleValidator:
-    def __init__(self, puzzlejson):
+    def __init__(self, puzzlejson, tolerance):
         self.correctcircuitjson = puzzlejson["validation-circuit"]
         self.validationMode = puzzlejson["validation-mode"]
         self.validationFunction = validateNone
+        self.tolerance = tolerance
         if puzzlejson["validation-mode"] == "statevector":
             self.validationFunction = validateStatevector
         elif puzzlejson["validation-mode"] == "results":
             self.validationFunction = validateResults
 
     def validate(self, circuit):
-        return self.validationFunction(circuit, assembleCircuit(self.correctcircuitjson))
+        return self.validationFunction(circuit, assembleCircuit(self.correctcircuitjson), self.tolerance)
 
 
 def loadPuzzle(fname):
@@ -70,7 +88,7 @@ def loadPuzzle(fname):
     CFR.editor(puzzlejson["circuit"],
                title=puzzlejson["name"],
                ispuzzle=True,
-               validator=PuzzleValidator(puzzlejson),
+               validator=PuzzleValidator(puzzlejson, puzzlejson.get("tolerance", 0.1)),
                gates=puzzlejson["unlocked-gates"],
                minrows=puzzlejson["minrows"],
                maxrows=puzzlejson["maxrows"],
