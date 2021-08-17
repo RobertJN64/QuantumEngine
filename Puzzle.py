@@ -1,7 +1,7 @@
 import json
 import CircuitFileRenderer as CFR
 from errors import InternalCommandException
-from CircuitJSONTools import validateJSON, assembleCircuit
+from CircuitJSONTools import validateJSON, assembleCircuit, saveJSON
 from QCircuitSimulator import simulate
 from qiskit.quantum_info import Statevector
 import warnings
@@ -85,7 +85,7 @@ def loadPuzzle(fname):
 
     validatePuzzle(puzzlejson)
     print(puzzlejson["info"]) #TODO - info box
-    CFR.editor(puzzlejson["circuit"],
+    save, circuitjson = CFR.editor(puzzlejson["circuit"],
                title=puzzlejson["name"],
                ispuzzle=True,
                validator=PuzzleValidator(puzzlejson, puzzlejson.get("tolerance", 0.1)),
@@ -94,3 +94,7 @@ def loadPuzzle(fname):
                maxrows=puzzlejson["maxrows"],
                allowcontrol=puzzlejson["allowcontrol"],
                allowparams=puzzlejson["allowparams"])
+
+    validateJSON(circuitjson)
+    if save:
+        saveJSON(circuitjson, input("File name: "))
