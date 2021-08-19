@@ -258,22 +258,31 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     if validator.validationMode == "statevector":
                                         qcSIM.save_bloch_multivector(resultsa, qca, "blocha")
                                         qcSIM.save_bloch_multivector(resultsb, qcb, "blochb")
-                                    blocha = pygame.image.load("resources/dynamic/blocha.png")
-                                    blochb = pygame.image.load("resources/dynamic/blochb.png")
-                                    recta = blocha.get_rect()
-                                    rectb = blochb.get_rect()
 
-                                    wa = round(recta.w * (blochheight / recta.h))
-                                    wb = round(rectb.w * (blochheight / rectb.h))
+                                        blocha = pygame.image.load("resources/dynamic/blocha.png")
+                                        blochb = pygame.image.load("resources/dynamic/blochb.png")
+                                        recta = blocha.get_rect()
+                                        rectb = blochb.get_rect()
 
-                                    blochwidth = max(wa, wb)
+                                        wa = round(recta.w * (blochheight / recta.h))
+                                        wb = round(rectb.w * (blochheight / rectb.h))
 
-                                    blocha = pygame.transform.smoothscale(blocha, (wa, blochheight))
-                                    blochb = pygame.transform.smoothscale(blochb, (wb, blochheight))
+                                        blochwidth = max(wa, wb)
 
-                                    currentmode = UIMode.TargetBoxOpen
+                                        blocha = pygame.transform.smoothscale(blocha, (wa, blochheight))
+                                        blochb = pygame.transform.smoothscale(blochb, (wb, blochheight))
 
-                elif event.button == 1 and currentmode == UIMode.TargetBoxOpen: #left click:
+                                        currentmode = UIMode.BlochSphereTargetBoxOpen
+
+                                    elif validator.validationMode == "results":
+                                        qcSIM.save_compare_statevector([resultsa, resultsb], ["Current", "Target"])
+
+                                    else:
+                                        warnings.warn("Unknown validation mode: " + str(validator.validationMode))
+                                        raise InternalCommandException
+
+                elif event.button == 1 and (currentmode == UIMode.BlochSphereTargetBoxOpen
+                                            or currentmode == UIMode.CompareStatevectorTargetBoxOpen): #left click:
                     for clickLoc in clickLocations:
                         if clickLoc.checkClick(x, y):
                             handmode = clickLoc.mode
@@ -378,7 +387,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     config.screenH/2 - 75, 25, (0,0,0))
             screen.blit(surf, (config.screenW/2 - 125, config.screenH/2 - 50))
 
-        elif currentmode == UIMode.TargetBoxOpen:
+        elif currentmode == UIMode.BlochSphereTargetBoxOpen:
             windoww = blochwidth + 125
             windowh = blochheight * 2 + 30
             pygame.draw.rect(screen, (255,255,255), (config.screenW/2 - windoww/2, config.screenH/2 - windowh/2,
@@ -391,6 +400,9 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     config.screenH/2 - windowh/2 + blochheight * 0.5 - 10, 25, (0,0,0), mode="topleft")
             PygameTools.displayText(screen, "Target:", config.screenW / 2 - windoww / 2 + 20,
                                     config.screenH / 2 - windowh / 2 + blochheight * 1.5, 25, (0, 0, 0), mode="topleft")
+
+        elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
+            pass #TODO
 
         if editorfig is not None:
             editorfig.canvas.flush_events()

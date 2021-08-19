@@ -68,7 +68,8 @@ class UIMode:
     Main = 0,
     ParamBoxOpen = 1,
     ControlWireConfig = 2,
-    TargetBoxOpen = 3
+    BlochSphereTargetBoxOpen = 3,
+    CompareStatevectorTargetBoxOpen = 4
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):

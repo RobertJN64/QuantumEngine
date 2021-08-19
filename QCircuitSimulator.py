@@ -39,6 +39,18 @@ def save_bloch_multivector(result, circuit, fname):
     fig.savefig('resources/dynamic/' + fname + '.png', transparent=True)
     pyplot.close()
 
+def save_compare_statevector(resultlist, labellist):
+    if len(resultlist) != len(labellist):
+        warnings.warn("Results list length does not match label list length.")
+        raise InternalCommandException
+
+    masterdb = {}
+    for index, result in enumerate(resultlist):
+        for key in result:
+            l = masterdb.get(key, [0] * len(resultlist))
+            l[index] = result[key]
+            masterdb[key] = l
+
 def add_measurements(circuit: QuantumCircuit):
     for i in range(circuit.num_qubits):
         circuit.measure(i, i)
