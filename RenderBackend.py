@@ -83,7 +83,6 @@ def verifyGateGraphics():
 
 verifyGateGraphics()
 
-
 def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 50):
     PygameTools.displayText(screen, title, config.titlepos[0], config.titlepos[0],
                             config.titlesize, config.titleColor, "topleft")
@@ -150,7 +149,6 @@ def drawCircuitToScreen(screen, circuitjson, title, minrows = 1, maxrows = 50):
 def drawPlusMinus(screen, filename, x, y, target, mode):
     screen.blit(images[filename], (x, y))
     clickLocations.append(ClickLocation(x, y, config.smallImageSize, config.smallImageSize, target, mode))
-
 
 def drawGate(screen, gate: dict, x, y):
     gateconfig = {}
@@ -281,3 +279,45 @@ def drawGateToolbox(screen, allowedgates, allowedtools):
             clickLocations.append(ClickLocation(gatepos - config.gateSize / 2, midy - config.gateSize / 2,
                                                 config.gateSize, config.gateSize, gate, ClickMode.AddControl))
         gatepos += config.gateSpacing
+
+def drawBlochSpheres(screen, blocha, blochb, blochwidth, blochheight):
+    windoww = blochwidth + 125
+    windowh = blochheight * 2 + 30
+    pygame.draw.rect(screen, (255, 255, 255), (config.screenW / 2 - windoww / 2, config.screenH / 2 - windowh / 2,
+                                               windoww, windowh))
+    pygame.draw.rect(screen, (0, 0, 0), ((config.screenW / 2 - windoww / 2, config.screenH / 2 - windowh / 2,
+                                          windoww, windowh)), width=3)
+    screen.blit(blocha, (config.screenW / 2 - windoww / 2 + 75, config.screenH / 2 - windowh / 2 + 10))
+    screen.blit(blochb, (config.screenW / 2 - windoww / 2 + 75, config.screenH / 2 - windowh / 2 + blochheight + 20))
+    PygameTools.displayText(screen, "Current:", config.screenW / 2 - windoww / 2 + 20,
+                            config.screenH / 2 - windowh / 2 + blochheight * 0.5 - 10, 25, (0, 0, 0), mode="topleft")
+    PygameTools.displayText(screen, "Target:", config.screenW / 2 - windoww / 2 + 20,
+                            config.screenH / 2 - windowh / 2 + blochheight * 1.5, 25, (0, 0, 0), mode="topleft")
+
+def drawParamBox(screen, parambox):
+    surf = parambox.get_surface()
+    pygame.draw.rect(screen, (100, 100, 100), (config.screenW / 2 - 150, config.screenH / 2 - 100, 300, 100),
+                     border_radius=3)
+    pygame.draw.rect(screen, (0, 0, 0), (config.screenW / 2 - 150, config.screenH / 2 - 100, 300, 100),
+                     width=5, border_radius=3)
+    PygameTools.displayText(screen, "Enter param: ", config.screenW / 2,
+                            config.screenH / 2 - 75, 25, (0, 0, 0))
+    screen.blit(surf, (config.screenW / 2 - 125, config.screenH / 2 - 50))
+
+def blitImageCommand(screen, file, x, y, size, command):
+    screen.blit(images[file], (x, y))
+    clickLocations.append(ClickLocation(x, y, size, size, target=command, mode=ClickMode.Command))
+
+def displayCommandImages(screen, ispuzzle):
+    x = config.screenW - config.smallImageSize - 10
+    commands = ["save", "view", "bloch", "play"]
+    i = 0
+    for i in range(0, 4):
+        blitImageCommand(screen, commands[i] + ".png", x, (config.smallImageSize + 10) * i + 5,
+                         config.smallImageSize, commands[i])
+
+    if ispuzzle:
+        blitImageCommand(screen, "check.png", x, (config.smallImageSize + 10) * (i + 1) + 5, config.smallImageSize,
+                         "check")
+        blitImageCommand(screen, "target.png", x, (config.smallImageSize + 10) * (i + 3) + 5, config.smallImageSize,
+                         "target")

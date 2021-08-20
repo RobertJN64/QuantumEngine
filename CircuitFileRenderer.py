@@ -4,7 +4,7 @@ import RenderBackend as Render
 from RenderBackend import images, clickLocations, warningMessage
 from DragAndDropTools import drawDropBox, getGateDropPos, getDeletePos
 import PygameTools
-from PygameTools import config, ClickMode, ClickLocation, UIMode
+from PygameTools import config, ClickMode, UIMode
 from errors import InternalCommandException
 from CircuitJSONTools import refactorJSON, addGate, deleteGate, updateGate, assembleCircuit
 from CustomVisualizations import visualize_transition
@@ -54,9 +54,7 @@ def runDisplayLoop(circuitjson):
                 done = True
     pygame.display.quit()
 
-def blitImageCommand(screen, file, x, y, size, command):
-    screen.blit(images[file], (x, y))
-    clickLocations.append(ClickLocation(x, y, size, size, target=command, mode=ClickMode.Command))
+
 
 defaultgates = [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]]
 
@@ -87,32 +85,20 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
     blochheight = config.blochSphereHeight
     blochwidth = 0
 
+    tools = []
+    if allowcontrol:
+        tools.append("control")
+    tools.append("delete")
+
     while not done:
         clickLocations.clear()
         screen.fill(config.screenColor)
         Render.drawCircuitToScreen(screen, circuitjson, title, minrows=minrows, maxrows=maxrows)
-
-        tools = []
-        if allowcontrol:
-            tools.append("control")
-        tools.append("delete")
-
         Render.drawGateToolbox(screen, gates, tools)
         PygameTools.displayText(screen, warningMessage.display(), config.screenW/2,
                                 config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, (200,0,0))
-
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
-
-        x = config.screenW - config.smallImageSize - 10
-        blitImageCommand(screen, "save.png", x, (config.smallImageSize + 10) * 0 + 5, config.smallImageSize, "save")
-        blitImageCommand(screen, "view.png", x, (config.smallImageSize + 10) * 1 + 5, config.smallImageSize, "view")
-        blitImageCommand(screen, "bloch.png", x, (config.smallImageSize + 10) * 2 + 5, config.smallImageSize, "bloch")
-        blitImageCommand(screen, "play.png", x, (config.smallImageSize + 10) * 3 + 5, config.smallImageSize, "play")
-        if ispuzzle:
-            blitImageCommand(screen, "check.png", x, (config.smallImageSize + 10) * 4 + 5, config.smallImageSize,
-                             "check")
-            blitImageCommand(screen, "target.png", x, (config.smallImageSize + 10) * 6 + 5, config.smallImageSize,
-                             "target")
+        Render.displayCommandImages(screen, ispuzzle)
 
         #region drag and drop
         x, y = pygame.mouse.get_pos()
@@ -122,17 +108,19 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                 row, col = getGateDropPos(x, y, circuitjson, config.gateSize)
                 if (row is not None) and (col is not None):
                     if col == "end":
-                        depth = len(circuitjson["rows"][row]["gates"])
-                        drawDropBox(screen, row, depth, "box")
+                        depth, t = len(circuitjson["rows"][row]["gates"]), "box"
 
                     elif circuitjson["rows"][row]["gates"][col]["type"] == "empty":
-                        drawDropBox(screen, row, col, "box")
+                        depth, t = col, "box"
 
                     else:
                         if col > 0 and circuitjson["rows"][row]["gates"][col-1]["type"] == "empty":
-                            drawDropBox(screen, row, col-1, "box")
+                            depth, t = col - 1, "box"
+
                         else:
-                            drawDropBox(screen, row, col, "line")
+                            depth, t = col, "line"
+
+                    drawDropBox(screen, row, depth, t)
 
             elif handmode == ClickMode.DeleteGate:
                 screen.blit(images["delete.png"], (x - config.imageSize/2, y - config.imageSize/2))
@@ -380,28 +368,10 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                 except ValueError:
                     warningMessage.warn("Invalid param format.", 100)
 
-            surf = parambox.get_surface()
-            pygame.draw.rect(screen, (100,100,100), (config.screenW/2 - 150, config.screenH/2 - 100, 300, 100),
-                             border_radius=3)
-            pygame.draw.rect(screen, (0, 0, 0), (config.screenW / 2 - 150, config.screenH / 2 - 100, 300, 100),
-                             width=5, border_radius=3)
-            PygameTools.displayText(screen, "Enter param: ", config.screenW/2,
-                                    config.screenH/2 - 75, 25, (0,0,0))
-            screen.blit(surf, (config.screenW/2 - 125, config.screenH/2 - 50))
+            Render.drawParamBox(screen, parambox)
 
         elif currentmode == UIMode.BlochSphereTargetBoxOpen:
-            windoww = blochwidth + 125
-            windowh = blochheight * 2 + 30
-            pygame.draw.rect(screen, (255,255,255), (config.screenW/2 - windoww/2, config.screenH/2 - windowh/2,
-                                                     windoww, windowh))
-            pygame.draw.rect(screen, (0,0,0), ((config.screenW/2 - windoww/2, config.screenH/2 - windowh/2,
-                                                     windoww, windowh)), width=3)
-            screen.blit(blocha, (config.screenW/2 - windoww/2 + 75, config.screenH/2 - windowh/2 + 10))
-            screen.blit(blochb, (config.screenW/2 - windoww/2 + 75, config.screenH/2 - windowh/2 + blochheight + 20))
-            PygameTools.displayText(screen, "Current:", config.screenW/2 - windoww/2 + 20,
-                                    config.screenH/2 - windowh/2 + blochheight * 0.5 - 10, 25, (0,0,0), mode="topleft")
-            PygameTools.displayText(screen, "Target:", config.screenW / 2 - windoww / 2 + 20,
-                                    config.screenH / 2 - windowh / 2 + blochheight * 1.5, 25, (0, 0, 0), mode="topleft")
+            Render.drawBlochSpheres(screen, blocha, blochb, blochwidth, blochheight)
 
         elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
             pass #TODO show statevector

@@ -1,0 +1,36 @@
+{
+  "name": "X Gate Part 2",
+  "info": "Use the x gate to end in state |0>",
+  "unlocked-gates": [["x"]],
+  "allowcontrol": false,
+  "allowparams": false,
+  "minrows": 1,
+  "maxrows": 1,
+  "circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "x"
+          }
+        ]
+      }
+    ]
+  },
+
+  "validation-mode": "statevector",
+  "validation-circuit": {
+    "rows": [
+      {
+        "gates": [
+          {
+            "type": "x"
+          },
+          {
+            "type": "x"
+          }
+        ]
+      }
+    ]
+  }
+}
