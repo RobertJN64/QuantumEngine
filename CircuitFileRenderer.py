@@ -404,7 +404,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     config.screenH / 2 - windowh / 2 + blochheight * 1.5, 25, (0, 0, 0), mode="topleft")
 
         elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
-            pass #TODO
+            pass #TODO show statevector
 
         if editorfig is not None:
             editorfig.canvas.flush_events()

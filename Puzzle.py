@@ -6,6 +6,8 @@ from QCircuitSimulator import simulate
 from qiskit.quantum_info import Statevector
 import warnings
 
+#TODO - puzzle set
+
 def validatePuzzle(puzzlejson):
     for key in ["name", "info", "circuit", "unlocked-gates", "minrows", "maxrows", "allowcontrol", "allowparams",
                 "validation-mode"]:

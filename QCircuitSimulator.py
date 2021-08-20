@@ -51,6 +51,8 @@ def save_compare_statevector(resultlist, labellist, colorlist):
             l[index] = result[key]
             masterdb[key] = l
 
+    sortedekeys = sorted(masterdb.keys())
+
     fig = pyplot.figure()
     ax = fig.add_subplot()
 
@@ -60,12 +62,13 @@ def save_compare_statevector(resultlist, labellist, colorlist):
     for i in range(0, len(resultlist)):
         rlist.append([])
 
-    for key, item in masterdb.items():
+    for key in sortedekeys:
+        item = masterdb[key]
         keys.append(key)
         for i, j in enumerate(item):
             rlist[i].append(j)
 
-    basepos = list(range(0, len(keys) * (len(resultlist) + 1), len(resultlist) + 1))
+    basepos = list(range(0, len(keys) * (len(resultlist) + 2), len(resultlist) + 2))
     xposdb = []
     for i, r in enumerate(rlist):
         xpos = []
@@ -85,6 +88,7 @@ def save_compare_statevector(resultlist, labellist, colorlist):
     ax.set_xticklabels(keys)
     ax.legend()
     fig.savefig("resources/dynamic/statevector.png", transparent=True)
+    pyplot.close()
 
 
 def add_measurements(circuit: QuantumCircuit):
