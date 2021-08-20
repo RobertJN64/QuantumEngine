@@ -275,7 +275,9 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                         currentmode = UIMode.BlochSphereTargetBoxOpen
 
                                     elif validator.validationMode == "results":
-                                        qcSIM.save_compare_statevector([resultsa, resultsb], ["Current", "Target"])
+                                        qcSIM.save_compare_statevector(
+                                            [resultsa.get_counts(qca), resultsb.get_counts(qcb)], ["Current", "Target"],
+                                                                       ['b', 'r'])
 
                                     else:
                                         warnings.warn("Unknown validation mode: " + str(validator.validationMode))

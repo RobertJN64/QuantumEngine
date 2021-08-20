@@ -39,8 +39,8 @@ def save_bloch_multivector(result, circuit, fname):
     fig.savefig('resources/dynamic/' + fname + '.png', transparent=True)
     pyplot.close()
 
-def save_compare_statevector(resultlist, labellist):
-    if len(resultlist) != len(labellist):
+def save_compare_statevector(resultlist, labellist, colorlist):
+    if len(resultlist) != len(labellist) != len (colorlist):
         warnings.warn("Results list length does not match label list length.")
         raise InternalCommandException
 
@@ -50,6 +50,42 @@ def save_compare_statevector(resultlist, labellist):
             l = masterdb.get(key, [0] * len(resultlist))
             l[index] = result[key]
             masterdb[key] = l
+
+    fig = pyplot.figure()
+    ax = fig.add_subplot()
+
+    keys = []
+    rlist = []
+
+    for i in range(0, len(resultlist)):
+        rlist.append([])
+
+    for key, item in masterdb.items():
+        keys.append(key)
+        for i, j in enumerate(item):
+            rlist[i].append(j)
+
+    basepos = list(range(0, len(keys) * (len(resultlist) + 1), len(resultlist) + 1))
+    xposdb = []
+    for i, r in enumerate(rlist):
+        xpos = []
+        for x in basepos:
+            xpos.append(x + i)
+        xposdb.append(xpos)
+        ax.bar(xpos, r, color=colorlist[i], label=labellist[i], width=1)
+
+    tickpos = []
+    for col in range(0, len(xposdb[0])):
+        total = 0
+        for x in xposdb:
+            total += x[col]
+        tickpos.append(total/len(xposdb))
+
+    ax.set_xticks(tickpos)
+    ax.set_xticklabels(keys)
+    ax.legend()
+    fig.savefig("resources/dynamic/statevector.png", transparent=True)
+
 
 def add_measurements(circuit: QuantumCircuit):
     for i in range(circuit.num_qubits):
