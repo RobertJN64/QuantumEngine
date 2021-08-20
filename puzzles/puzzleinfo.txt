@@ -1,0 +1,38 @@
+xgate
+  This puzzle introduces the concept of adding gates to circuits and the Bloch Sphere.
+
+xgate2
+  This puzzle reinforces the concept of circuit gates and the Bloch Sphere.
+
+multiline
+  This puzzle introduces multiline circuits and the results view.
+
+xgateparam
+  This puzzle introduces parameters and reinforces Bloch Sphere concepts.
+
+ygate
+  This puzzle introduces the ygate and its effect on the Bloch vector.
+
+ygateparam
+  This puzzle reinforces paramaters, multiline circuits, and the Bloch Sphere.
+
+superposition
+  This puzzle uses an xgate to put the circuit in superposition.
+
+superposition2
+  This puzzle introduces the hgate and connects it to superposition.
+
+interference
+  This puzzle shows how hgates cancel eachother out.
+
+zgate
+  This puzzle uses a zgate to rotate the circuit around the z axis.
+
+phase
+  This puzzle shows how phase manipulations effect final probabiltiy when using hgates.
+
+controlwire
+  Puzzle info
+
+entanglement
+  This puzzle uses a cxgate to put the circuit into an entangled state.

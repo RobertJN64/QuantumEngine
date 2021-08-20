@@ -96,6 +96,10 @@ def main(killflag):
                 verifyCMD(flags, [], params, 1, 1)
                 qcPUZZLE.loadPuzzle(params[0])
 
+            elif cmd == "puzzleset":
+                verifyCMD(flags, [], params, 0, 0)
+                qcPUZZLE.loadPuzzleset("puzzleset")
+
             else:
                 raise CommandNotFoundError(cmd)
 

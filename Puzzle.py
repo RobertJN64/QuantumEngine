@@ -6,8 +6,6 @@ from QCircuitSimulator import simulate
 from qiskit.quantum_info import Statevector
 import warnings
 
-#TODO - puzzle set
-
 def validatePuzzle(puzzlejson):
     for key in ["name", "info", "circuit", "unlocked-gates", "minrows", "maxrows", "allowcontrol", "allowparams",
                 "validation-mode"]:
@@ -82,8 +80,12 @@ class PuzzleValidator:
 
 
 def loadPuzzle(fname):
-    with open("puzzles/" + fname + ".json") as f:
-        puzzlejson = json.load(f)
+    try:
+        with open("puzzles/" + fname + ".json") as f:
+            puzzlejson = json.load(f)
+    except FileNotFoundError:
+        warnings.warn("Puzzle file not found.")
+        raise InternalCommandException
 
     validatePuzzle(puzzlejson)
     print(puzzlejson["info"]) #TODO - info box
@@ -100,3 +102,21 @@ def loadPuzzle(fname):
     validateJSON(circuitjson)
     if save:
         saveJSON(circuitjson, input("File name: "))
+
+def loadPuzzleset(fname):
+    try:
+        with open("puzzles/" + fname + ".json") as f:
+            puzzleset = json.load(f)
+    except FileNotFoundError:
+        warnings.warn("Puzzle set file not found.")
+        raise InternalCommandException
+
+    for puzzle in puzzleset:
+        try:
+            open("puzzles/" + puzzle + ".json")
+        except FileNotFoundError:
+            warnings.warn("Puzzle <" + str(puzzle) + "> file not found.")
+            raise InternalCommandException
+
+    for puzzle in puzzleset:
+        loadPuzzle(puzzle)
