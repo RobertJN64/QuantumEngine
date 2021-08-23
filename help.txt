@@ -31,5 +31,11 @@ Loads the circuit editor. Can edit existing files or create new ones.
 #puzzle
 Loads a puzzle into the editor. Param specifies file.
 
+#puzzleset
+Plays through a group of puzzle.
+
+#editpuzzle
+Edits or creates a puzzle.
+
 #kill
 Shuts down the editor + keyboard thread cleanly.

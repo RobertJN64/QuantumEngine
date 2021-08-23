@@ -100,6 +100,10 @@ def main(killflag):
                 verifyCMD(flags, [], params, 0, 0)
                 qcPUZZLE.loadPuzzleset("puzzleset")
 
+            elif cmd == "editpuzzle":
+                verifyCMD(flags, [], params, 1, 1)
+                qcPUZZLE.editPuzzle(params[0])
+
             else:
                 raise CommandNotFoundError(cmd)
 

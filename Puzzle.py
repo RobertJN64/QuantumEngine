@@ -6,8 +6,6 @@ from QCircuitSimulator import simulate
 from qiskit.quantum_info import Statevector
 import warnings
 
-#TODO - puzzle editor
-
 def validatePuzzle(puzzlejson):
     for key in ["name", "info", "circuit", "unlocked-gates", "minrows", "maxrows", "allowcontrol", "allowparams",
                 "validation-mode"]:
@@ -31,6 +29,7 @@ def validatePuzzle(puzzlejson):
         warnings.warn("Puzzle row count not in valid range!")
         raise InternalCommandException
 
+#region internal validators
 def validateStatevector(circuita, circuitb, tolerance):
     if tolerance == tolerance:
         pass
@@ -79,7 +78,7 @@ class PuzzleValidator:
 
     def validate(self, circuit):
         return self.validationFunction(circuit, assembleCircuit(self.correctcircuitjson), self.tolerance)
-
+#endregion
 
 def loadPuzzle(fname):
     try:
@@ -122,3 +121,75 @@ def loadPuzzleset(fname):
 
     for puzzle in puzzleset:
         loadPuzzle(puzzle)
+
+def editPuzzle(fname):
+    try:
+        with open("puzzles/" + fname + ".json") as f:
+            puzzle = json.load(f)
+            print("You are editting an existing puzzle...")
+
+    except FileNotFoundError:
+        print("You are creating a new puzzle...")
+        puzzle = {}
+
+    if "name" not in puzzle or input("Puzzle name is: " + str(puzzle["name"]) + " Change? ") == "y":
+        puzzle["name"] = input("Enter puzzle name: ")
+
+    if "info" not in puzzle or input("Puzzle description is:\n" + str(puzzle["info"]) + "\nChange? ") == "y":
+        puzzle["info"] = input("Enter puzzle description: ")
+
+    if "allowcontrol" not in puzzle or input("Puzzle allowcontrol is: " + str(puzzle["allowcontrol"])  + " Change? ") == "y":
+        puzzle["allowcontrol"] = input("Enter puzzle allowcontrol: ").lower() == "true"
+
+    if "allowparams" not in puzzle or input("Puzzle allowparams is: " + str(puzzle["allowparams"])  + " Change? ") == "y":
+        puzzle["allowparams"] = input("Enter puzzle allowparams: ").lower() == "true"
+
+    if "minrows" not in puzzle or input("Puzzle minrows is: " + str(puzzle["minrows"])  + " Change? ") == "y":
+        puzzle["minrows"] = int(input("Enter puzzle minrows: "))
+
+    if "maxrows" not in puzzle or input("Puzzle maxrows is: " + str(puzzle["minrows"])  + " Change? ") == "y":
+        puzzle["minrows"] = int(input("Enter puzzle maxrows: "))
+
+    if "unlocked-gates" not in puzzle or input("Puzzle unlocked gates is:\n" + str(puzzle["minrows"])  + "\nChange? ") == "y":
+        done = False
+        groups = []
+        while not done:
+            gates = input("Enter gate group: ")
+            gates = gates.split(',')
+            for i in range(0, len(gates)):
+                gates[i] = gates[i].replace(' ', '')
+            groups.append(gates)
+            done = input("Done? ") == "y"
+        puzzle["unlocked-gates"] = groups
+
+    if "validation-circuit" not in puzzle or input("Change validation circuit? ") == "y":
+        print("Build puzzle solution.")
+        startingcircuit = {"rows": [{"gates": []}]}
+        save, cjson = CFR.editor(startingcircuit, "Puzzle Solution", puzzle["unlocked-gates"], puzzle["minrows"],
+                                puzzle["maxrows"], puzzle["allowcontrol"], puzzle["allowparams"])
+        if save:
+            puzzle["validation-circuit"] = cjson
+
+    if "circuit" not in puzzle or input("Change starting circuit? ") == "y":
+        print("Build staring circuit.")
+        startingcircuit = {"rows": [{"gates": []}]}
+        save, cjson = CFR.editor(startingcircuit, "Puzzle Solution", puzzle["unlocked-gates"], puzzle["minrows"],
+                                puzzle["maxrows"], puzzle["allowcontrol"], puzzle["allowparams"])
+        if save:
+            puzzle["circuit"] = cjson
+
+    if "validation-mode" not in puzzle or input("Puzzle validation mode is: " + str(puzzle["validation-mode"])  + " Change? ") == "y":
+        newmode = ""
+        while newmode not in ["statevector, results"]:
+            newmode = str(input("Enter puzzle validation mode (statevector / results): "))
+        puzzle["validation-mode"] = newmode
+
+    if (puzzle["validation-mode"] == "results" and
+            ("tolerance" not in puzzle or input("Puzzle validation tolerance is: " + str(puzzle["tolerance"])  + " Change? ") == "y")):
+        puzzle["tolerance-mode"] = str(input("Enter puzzle validation tolerance: "))
+
+    validatePuzzle(puzzle)
+
+    if input("Save changes?: ") == "y":
+        with open("puzzles/" + fname + ".json", "w+") as f:
+            json.dump(puzzle, f, indent=4)
