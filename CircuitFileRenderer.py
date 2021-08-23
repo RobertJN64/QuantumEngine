@@ -81,6 +81,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
 
     blocha = None
     blochb = None
+    svimg = None
 
     blochheight = config.blochSphereHeight
     blochwidth = 0
@@ -265,7 +266,21 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     elif validator.validationMode == "results":
                                         qcSIM.save_compare_statevector(
                                             [resultsa.get_counts(qca), resultsb.get_counts(qcb)], ["Current", "Target"],
-                                                                       ['b', 'r'])
+                                                                       ['b', 'r'], allkeys=config.statevectorAllKeys)
+                                        svimg = pygame.image.load("resources/dynamic/statevector.png")
+                                        r = svimg.get_rect()
+                                        if r.w/config.screenW > r.h/config.screenH:
+                                            w = round(config.screenW/1.5)
+                                            h = round(r.h * w/r.w)
+
+                                        else:
+                                            h = round(config.screenH / 1.5)
+                                            w = round(r.w * h / r.h)
+
+                                        svimg = pygame.transform.smoothscale(svimg, (w, h))
+                                        currentmode = UIMode.CompareStatevectorTargetBoxOpen
+
+
 
                                     else:
                                         warnings.warn("Unknown validation mode: " + str(validator.validationMode))
@@ -374,7 +389,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
             Render.drawBlochSpheres(screen, blocha, blochb, blochwidth, blochheight)
 
         elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
-            pass #TODO show statevector
+            Render.drawStatevector(screen, svimg)
 
         if editorfig is not None:
             editorfig.canvas.flush_events()

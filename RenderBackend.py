@@ -304,6 +304,15 @@ def drawParamBox(screen, parambox):
                             config.screenH / 2 - 75, 25, (0, 0, 0))
     screen.blit(surf, (config.screenW / 2 - 125, config.screenH / 2 - 50))
 
+def drawStatevector(screen, svimg):
+    r = svimg.get_rect()
+    pygame.draw.rect(screen, (255, 255, 255), (config.screenW/2 - r.w/2 - 10, config.screenH/2 - r.h/2 - 10,
+                                               r.w + 20, r.h+20))
+    pygame.draw.rect(screen, (0, 0, 0), (config.screenW/2 - r.w/2 - 10, config.screenH/2 - r.h/2 - 10,
+                                               r.w + 20, r.h+20), width=3)
+    screen.blit(svimg, (config.screenW/2 - r.w/2, config.screenH/2 - r.h/2))
+
+
 def blitImageCommand(screen, file, x, y, size, command):
     screen.blit(images[file], (x, y))
     clickLocations.append(ClickLocation(x, y, size, size, target=command, mode=ClickMode.Command))

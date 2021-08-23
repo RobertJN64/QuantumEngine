@@ -29,5 +29,6 @@
 
   "gate-drop-color": [100,200,0],
 
-  "bloch-sphere-height": 200
+  "bloch-sphere-height": 200,
+  "statevector-allkeys": true
 }

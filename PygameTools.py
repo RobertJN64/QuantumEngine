@@ -45,6 +45,8 @@ class PygameConfig:
 
             self.blochSphereHeight = configjson["bloch-sphere-height"]
 
+            self.statevectorAllKeys = configjson["statevector-allkeys"]
+
         except KeyError:
             warnings.warn("Malformed pygame config.")
             warnings.warn(traceback.format_exc())

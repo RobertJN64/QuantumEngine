@@ -39,7 +39,21 @@ def save_bloch_multivector(result, circuit, fname):
     fig.savefig('resources/dynamic/' + fname + '.png', transparent=True)
     pyplot.close()
 
-def save_compare_statevector(resultlist, labellist, colorlist):
+def customBinary(num, l):
+    s = str(bin(num))[2:]
+    s = "0" * (l - len(s)) + s
+    if len(s) != l:
+        warnings.warn("Can't make binary expression for: " + str(num) + " with len: " + str(l))
+        raise InternalCommandException
+    return s
+
+def generateKeyList(length):
+    keys = []
+    for i in range(0, 2 ** length):
+        keys.append(customBinary(i, length))
+    return keys
+
+def save_compare_statevector(resultlist, labellist, colorlist, allkeys=False):
     if len(resultlist) != len(labellist) != len (colorlist):
         warnings.warn("Results list length does not match label list length.")
         raise InternalCommandException
@@ -51,7 +65,12 @@ def save_compare_statevector(resultlist, labellist, colorlist):
             l[index] = result[key]
             masterdb[key] = l
 
-    sortedekeys = sorted(masterdb.keys())
+    if allkeys:
+        for key in generateKeyList(len(list(masterdb.keys())[0])):
+            if key not in masterdb:
+                masterdb[key] = [0,0]
+
+    sortedkeys = sorted(masterdb.keys())
 
     fig = pyplot.figure()
     ax = fig.add_subplot()
@@ -62,11 +81,12 @@ def save_compare_statevector(resultlist, labellist, colorlist):
     for i in range(0, len(resultlist)):
         rlist.append([])
 
-    for key in sortedekeys:
+    for key in sortedkeys:
         item = masterdb[key]
         keys.append(key)
         for i, j in enumerate(item):
             rlist[i].append(j)
+
 
     basepos = list(range(0, len(keys) * (len(resultlist) + 2), len(resultlist) + 2))
     xposdb = []
