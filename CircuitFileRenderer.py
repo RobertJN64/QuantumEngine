@@ -15,7 +15,6 @@ import pygame
 
 #TODO - swap gate graphics
 #TODO - scrolling
-#TODO - xout
 
 editorfig = None
 
@@ -54,7 +53,6 @@ def runDisplayLoop(circuitjson):
             if event.type == pygame.QUIT:
                 done = True
     pygame.display.quit()
-
 
 
 defaultgates = [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]]
