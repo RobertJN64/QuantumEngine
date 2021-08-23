@@ -38,7 +38,7 @@ def verifyGateGraphics():
     i = config.imageSize
     for image, size in [["delete.png", i], ["plus.png", s], ["minus.png", s], ["redplus.png", s], ["redminus.png", s],
                         ["save.png", s], ["view.png", s], ["play.png", s], ["bloch.png", s], ["check.png", s],
-                        ["target.png", s]]:
+                        ["target.png", s], ["close.png", s]]:
         img = pygame.image.load("resources/images/" + image)
         img = pygame.transform.smoothscale(img, (round(size), round(size)))
         images[image] = img
@@ -294,6 +294,8 @@ def drawBlochSpheres(screen, blocha, blochb, blochwidth, blochheight):
     PygameTools.displayText(screen, "Target:", config.screenW / 2 - windoww / 2 + 20,
                             config.screenH / 2 - windowh / 2 + blochheight * 1.5, 25, (0, 0, 0), mode="topleft")
 
+    return config.screenW / 2 + windoww / 2, config.screenH / 2 - windowh / 2
+
 def drawParamBox(screen, parambox):
     surf = parambox.get_surface()
     pygame.draw.rect(screen, (100, 100, 100), (config.screenW / 2 - 150, config.screenH / 2 - 100, 300, 100),
@@ -309,8 +311,9 @@ def drawStatevector(screen, svimg):
     pygame.draw.rect(screen, (255, 255, 255), (config.screenW/2 - r.w/2 - 10, config.screenH/2 - r.h/2 - 10,
                                                r.w + 20, r.h+20))
     pygame.draw.rect(screen, (0, 0, 0), (config.screenW/2 - r.w/2 - 10, config.screenH/2 - r.h/2 - 10,
-                                               r.w + 20, r.h+20), width=3)
+                                               r.w + 20, r.h + 20), width=3)
     screen.blit(svimg, (config.screenW/2 - r.w/2, config.screenH/2 - r.h/2))
+    return config.screenW/2 + r.w/2 + 10, config.screenH/2 - r.h/2 - 10
 
 
 def blitImageCommand(screen, file, x, y, size, command):

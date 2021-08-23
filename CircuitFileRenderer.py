@@ -15,6 +15,7 @@ import pygame
 
 #TODO - swap gate graphics
 #TODO - scrolling
+#TODO - xout
 
 editorfig = None
 
@@ -137,6 +138,14 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                 if row is not None and col is not None and col != "end":
                     drawDropBox(screen, row, col, "box")
         #endregion
+
+        if currentmode == UIMode.BlochSphereTargetBoxOpen:
+            tlx, tly = Render.drawBlochSpheres(screen, blocha, blochb, blochwidth, blochheight)
+            Render.blitImageCommand(screen, "close.png", tlx - config.smallImageSize, tly, config.smallImageSize, "close")
+
+        elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
+            tlx, tly = Render.drawStatevector(screen, svimg)
+            Render.blitImageCommand(screen, "close.png", tlx - config.smallImageSize, tly, config.smallImageSize, "close")
 
         events = pygame.event.get()
         for event in events:
@@ -280,8 +289,6 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                         svimg = pygame.transform.smoothscale(svimg, (w, h))
                                         currentmode = UIMode.CompareStatevectorTargetBoxOpen
 
-
-
                                     else:
                                         warnings.warn("Unknown validation mode: " + str(validator.validationMode))
                                         raise InternalCommandException
@@ -293,6 +300,8 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                             handmode = clickLoc.mode
                             if clickLoc.mode == ClickMode.Command:
                                 if clickLoc.target == "target":
+                                    currentmode = UIMode.Main
+                                elif clickLoc.target == "close":
                                     currentmode = UIMode.Main
 
                 elif event.button == 3 and currentmode == UIMode.Main:
@@ -383,13 +392,8 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                 except ValueError:
                     warningMessage.warn("Invalid param format.", 100)
 
-            Render.drawParamBox(screen, parambox)
-
-        elif currentmode == UIMode.BlochSphereTargetBoxOpen:
-            Render.drawBlochSpheres(screen, blocha, blochb, blochwidth, blochheight)
-
-        elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
-            Render.drawStatevector(screen, svimg)
+            else:
+                Render.drawParamBox(screen, parambox)
 
         if editorfig is not None:
             editorfig.canvas.flush_events()
