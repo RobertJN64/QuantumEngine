@@ -17,11 +17,15 @@ def validatePuzzle(puzzlejson):
         warnings.warn("Unexpected validation mode.")
         raise InternalCommandException
 
-    if puzzlejson["validation-mode"] in ["statevector", "results"]:
-        if "validation-circuit" not in puzzlejson:
-            warnings.warn("Puzzle json missing key: " + "validation-circuit")
+    if puzzlejson["validation-mode"] == "results":
+        if "tolerance" not in puzzlejson:
+            warnings.warn("Puzzle json missing key: " + "tolerance")
             raise InternalCommandException
-        validateJSON(puzzlejson["validation-circuit"])
+
+    if "validation-circuit" not in puzzlejson:
+        warnings.warn("Puzzle json missing key: " + "validation-circuit")
+        raise InternalCommandException
+    validateJSON(puzzlejson["validation-circuit"])
 
     validateJSON(puzzlejson["circuit"])
 
@@ -132,25 +136,25 @@ def editPuzzle(fname):
         print("You are creating a new puzzle...")
         puzzle = {}
 
-    if "name" not in puzzle or input("Puzzle name is: " + str(puzzle["name"]) + " Change? ") == "y":
+    if "name" not in puzzle or input("Puzzle name is: " + str(puzzle["name"]) + " | Change? ") == "y":
         puzzle["name"] = input("Enter puzzle name: ")
 
     if "info" not in puzzle or input("Puzzle description is:\n" + str(puzzle["info"]) + "\nChange? ") == "y":
         puzzle["info"] = input("Enter puzzle description: ")
 
-    if "allowcontrol" not in puzzle or input("Puzzle allowcontrol is: " + str(puzzle["allowcontrol"])  + " Change? ") == "y":
-        puzzle["allowcontrol"] = input("Enter puzzle allowcontrol: ").lower() == "true"
+    if "allowcontrol" not in puzzle or input("Puzzle allowcontrol is: " + str(puzzle["allowcontrol"])  + " | Change? ") == "y":
+        puzzle["allowcontrol"] = input("Enter puzzle allowcontrol: ").lower() in ["true", "y"]
 
-    if "allowparams" not in puzzle or input("Puzzle allowparams is: " + str(puzzle["allowparams"])  + " Change? ") == "y":
-        puzzle["allowparams"] = input("Enter puzzle allowparams: ").lower() == "true"
+    if "allowparams" not in puzzle or input("Puzzle allowparams is: " + str(puzzle["allowparams"])  + " | Change? ") == "y":
+        puzzle["allowparams"] = input("Enter puzzle allowparams: ").lower() in ["true", "y"]
 
-    if "minrows" not in puzzle or input("Puzzle minrows is: " + str(puzzle["minrows"])  + " Change? ") == "y":
+    if "minrows" not in puzzle or input("Puzzle minrows is: " + str(puzzle["minrows"])  + " | Change? ") == "y":
         puzzle["minrows"] = int(input("Enter puzzle minrows: "))
 
-    if "maxrows" not in puzzle or input("Puzzle maxrows is: " + str(puzzle["minrows"])  + " Change? ") == "y":
-        puzzle["minrows"] = int(input("Enter puzzle maxrows: "))
+    if "maxrows" not in puzzle or input("Puzzle maxrows is: " + str(puzzle["minrows"])  + " | Change? ") == "y":
+        puzzle["maxrows"] = int(input("Enter puzzle maxrows: "))
 
-    if "unlocked-gates" not in puzzle or input("Puzzle unlocked gates is:\n" + str(puzzle["minrows"])  + "\nChange? ") == "y":
+    if "unlocked-gates" not in puzzle or input("Puzzle unlocked gates is:\n" + str(puzzle["unlocked-gates"])  + "\nChange? ") == "y":
         done = False
         groups = []
         while not done:
@@ -164,29 +168,41 @@ def editPuzzle(fname):
 
     if "validation-circuit" not in puzzle or input("Change validation circuit? ") == "y":
         print("Build puzzle solution.")
-        startingcircuit = {"rows": [{"gates": []}]}
+        rows = []
+        for i in range(0, puzzle["minrows"]):
+            rows.append({"gates": []})
+        startingcircuit = {"rows": rows}
         save, cjson = CFR.editor(startingcircuit, "Puzzle Solution", puzzle["unlocked-gates"], puzzle["minrows"],
                                 puzzle["maxrows"], puzzle["allowcontrol"], puzzle["allowparams"])
         if save:
+            print("Circuit updated.")
             puzzle["validation-circuit"] = cjson
+        else:
+            print("Circuit was not updated.")
 
     if "circuit" not in puzzle or input("Change starting circuit? ") == "y":
         print("Build staring circuit.")
-        startingcircuit = {"rows": [{"gates": []}]}
-        save, cjson = CFR.editor(startingcircuit, "Puzzle Solution", puzzle["unlocked-gates"], puzzle["minrows"],
+        rows = []
+        for i in range(0, puzzle["minrows"]):
+            rows.append({"gates": []})
+        startingcircuit = {"rows": rows}
+        save, cjson = CFR.editor(startingcircuit, "Starting Circuit", puzzle["unlocked-gates"], puzzle["minrows"],
                                 puzzle["maxrows"], puzzle["allowcontrol"], puzzle["allowparams"])
         if save:
+            print("Circuit updated.")
             puzzle["circuit"] = cjson
+        else:
+            print("Circuit was not updated.")
 
-    if "validation-mode" not in puzzle or input("Puzzle validation mode is: " + str(puzzle["validation-mode"])  + " Change? ") == "y":
+    if "validation-mode" not in puzzle or input("Puzzle validation mode is: " + str(puzzle["validation-mode"])  + " | Change? ") == "y":
         newmode = ""
-        while newmode not in ["statevector, results"]:
+        while newmode not in ["statevector", "results"]:
             newmode = str(input("Enter puzzle validation mode (statevector / results): "))
         puzzle["validation-mode"] = newmode
 
     if (puzzle["validation-mode"] == "results" and
-            ("tolerance" not in puzzle or input("Puzzle validation tolerance is: " + str(puzzle["tolerance"])  + " Change? ") == "y")):
-        puzzle["tolerance-mode"] = str(input("Enter puzzle validation tolerance: "))
+            ("tolerance" not in puzzle or input("Puzzle validation tolerance is: " + str(puzzle["tolerance"])  + " | Change? ") == "y")):
+        puzzle["tolerance"] = str(input("Enter puzzle validation tolerance: "))
 
     validatePuzzle(puzzle)
 
