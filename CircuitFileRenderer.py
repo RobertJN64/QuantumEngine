@@ -100,8 +100,9 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
         screen.fill(config.screenColor)
         Render.drawCircuitToScreen(screen, circuitjson, title, minrows=minrows, maxrows=maxrows)
         Render.drawGateToolbox(screen, gates, tools)
-        PygameTools.displayText(screen, warningMessage.display(), config.screenW/2,
-                                config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, (200,0,0))
+        text, color = warningMessage.display()
+        PygameTools.displayText(screen, text, config.screenW/2,
+                                config.screenH - config.toolboxOffGround - config.gateSpacing * 1.5, 20, color)
         PygameTools.displayText(screen, "FPS: " + str(round(clock.get_fps())), config.screenW - 100, 25, 15, (0, 0, 0))
         Render.displayCommandImages(screen, ispuzzle)
 
@@ -251,9 +252,9 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     circuitjson = refactorJSON(circuitjson)
                                     qc = assembleCircuit(circuitjson)
                                     if validator.validate(qc):
-                                        print("Circuit solved puzzle!")
+                                        warningMessage.warn("Circuit solved puzzle!", 120, color=(0, 0, 0))
                                     else:
-                                        print("Try again!")
+                                        warningMessage.warn("Try again", 120, color=(255,0,0))
 
                                 elif clickLoc.target == "target":
                                     circuitjson = refactorJSON(circuitjson)
@@ -335,6 +336,11 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                         p = ["180"]
                                     parambox.input_string = ", ".join(p)
                                     parambox.cursor_position = len(parambox.input_string)
+                                else:
+                                    warningMessage.warn("Can't add param to that gate.", 100)
+                            elif not allowparams:
+                                warningMessage.warn("You can't add params in this circuit.", 100)
+
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1 and currentmode == UIMode.Main:

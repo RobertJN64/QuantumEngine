@@ -65,7 +65,7 @@ def save_compare_statevector(resultlist, labellist, colorlist, allkeys=False):
             l[index] = result[key]
             masterdb[key] = l
 
-    if allkeys:
+    if allkeys and len(list(masterdb.keys())[0]) <= 3:
         for key in generateKeyList(len(list(masterdb.keys())[0])):
             if key not in masterdb:
                 masterdb[key] = [0,0]

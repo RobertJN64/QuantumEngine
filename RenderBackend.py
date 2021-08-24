@@ -11,20 +11,22 @@ class WarningMessage:
     def __init__(self):
         self.message = ""
         self.timer = 0
+        self.color = (255,0,0)
 
     def tick(self):
         if self.timer >= 0:
             self.timer -= 1
 
-    def warn(self, message, timer):
+    def warn(self, message, timer, color=(255,0,0)):
         self.message = message
         self.timer = timer
+        self.color = color
 
     def display(self):
         if self.timer > 0:
-            return self.message
+            return self.message, self.color
         else:
-            return ""
+            return "", self.color
 
 warningMessage = WarningMessage()
 

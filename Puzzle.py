@@ -201,7 +201,7 @@ def editPuzzle(fname):
 
     if (puzzle["validation-mode"] == "results" and
             ("tolerance" not in puzzle or input("Puzzle validation tolerance is: " + str(puzzle["tolerance"])  + " | Change? ") == "y")):
-        puzzle["tolerance"] = str(input("Enter puzzle validation tolerance: "))
+        puzzle["tolerance"] = float(input("Enter puzzle validation tolerance: "))
 
     validatePuzzle(puzzle)
 
