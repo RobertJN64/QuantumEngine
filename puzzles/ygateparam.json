@@ -1,0 +1,61 @@
+{
+    "name": "Y Gate Parameters",
+    "info": "Parameters can be used to modify the y gate as well. Negative parameters are also possible",
+    "allowcontrol": false,
+    "allowparams": true,
+    "minrows": 3,
+    "maxrows": 3,
+    "unlocked-gates": [
+        [
+            "y"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "ry",
+                        "params": [
+                            90.0
+                        ]
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "ry",
+                        "params": [
+                            -45.0
+                        ]
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "ry",
+                        "params": [
+                            -90.0
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "statevector"
+}

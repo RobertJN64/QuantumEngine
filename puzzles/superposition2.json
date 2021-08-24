@@ -1,0 +1,33 @@
+{
+    "name": "H Gates and Superposition",
+    "info": "H gates are an easier way to create a superposition.",
+    "allowcontrol": false,
+    "allowparams": false,
+    "minrows": 1,
+    "maxrows": 1,
+    "unlocked-gates": [
+        [
+            "h"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "h"
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "results",
+    "tolerance": "0.1"
+}

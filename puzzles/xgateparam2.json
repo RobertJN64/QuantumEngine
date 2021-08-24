@@ -1,0 +1,61 @@
+{
+    "name": "X Gate Parameters 2",
+    "info": "Use parameters to put the qubits in the correct state.",
+    "allowcontrol": false,
+    "allowparams": true,
+    "minrows": 3,
+    "maxrows": 3,
+    "unlocked-gates": [
+        [
+            "x"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "rx",
+                        "params": [
+                            45.0
+                        ]
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "rx",
+                        "params": [
+                            90.0
+                        ]
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "rx",
+                        "params": [
+                            135.0
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "statevector"
+}

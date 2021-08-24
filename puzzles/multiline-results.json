@@ -1,0 +1,73 @@
+{
+    "name": "Multiple Qubit Challenge 2",
+    "info": "Use xgates and the results view to put the qubits in the correct states.",
+    "allowcontrol": false,
+    "allowparams": false,
+    "minrows": 5,
+    "maxrows": 5,
+    "unlocked-gates": [
+        [
+            "x"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "empty"
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "x"
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "empty"
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "x"
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "x"
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "results",
+    "tolerance": "0.1"
+}

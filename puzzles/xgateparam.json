@@ -1,0 +1,39 @@
+{
+    "name": "X Gate Parameters",
+    "info": "Right click on the xgate to add a parameter. Parameters specify the amount to rotate around the axis on the Bloch Sphere.",
+    "allowcontrol": false,
+    "allowparams": true,
+    "minrows": 1,
+    "maxrows": 1,
+    "unlocked-gates": [
+        [
+            "x"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "rx",
+                        "params": [
+                            90.0
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "x"
+                    }
+                ]
+            }
+        ]
+    },
+    "validation-mode": "statevector"
+}

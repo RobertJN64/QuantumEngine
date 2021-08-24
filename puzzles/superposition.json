@@ -1,0 +1,36 @@
+{
+    "name": "Superposition",
+    "info": "Superposition is a key part of quantum computing. A superposition puts a qubit between the states |0> and |1>. Use a parameter of 90 to add a create a superposition.",
+    "allowcontrol": false,
+    "allowparams": true,
+    "minrows": 1,
+    "maxrows": 1,
+    "unlocked-gates": [
+        [
+            "x"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "rx",
+                        "params": [
+                            90.0
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "results",
+    "tolerance": "0.1"
+}

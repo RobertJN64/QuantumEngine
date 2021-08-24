@@ -5,10 +5,16 @@ xgate2
   This puzzle reinforces the concept of circuit gates and the Bloch Sphere.
 
 multiline
-  This puzzle introduces multiline circuits and the results view.
+  This puzzle introduces multiline circuits.
+
+multiline-results
+  This puzzle reinforces multiline circuits and introduces the results view.
 
 xgateparam
   This puzzle introduces parameters and reinforces Bloch Sphere concepts.
+
+xgateparam2
+  This puzzle reinforces parameters and multiline circuits.
 
 ygate
   This puzzle introduces the ygate and its effect on the Bloch vector.

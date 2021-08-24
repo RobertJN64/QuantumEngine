@@ -1,0 +1,32 @@
+{
+    "name": "Y Gate",
+    "info": "The y gate is similar to the x gate, but it rotates around the y axis. Use the y gate to move from state |0> to |1>.",
+    "allowcontrol": false,
+    "allowparams": false,
+    "minrows": 1,
+    "maxrows": 1,
+    "unlocked-gates": [
+        [
+            "y"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "y"
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "statevector"
+}

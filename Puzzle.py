@@ -6,6 +6,8 @@ from QCircuitSimulator import simulate
 from qiskit.quantum_info import Statevector
 import warnings
 
+#TODO - multiline results broke graph
+
 def validatePuzzle(puzzlejson):
     for key in ["name", "info", "circuit", "unlocked-gates", "minrows", "maxrows", "allowcontrol", "allowparams",
                 "validation-mode"]:
@@ -148,7 +150,7 @@ def editPuzzle(fname):
     if "minrows" not in puzzle or input("Puzzle minrows is: " + str(puzzle["minrows"])  + " | Change? ") == "y":
         puzzle["minrows"] = int(input("Enter puzzle minrows: "))
 
-    if "maxrows" not in puzzle or input("Puzzle maxrows is: " + str(puzzle["minrows"])  + " | Change? ") == "y":
+    if "maxrows" not in puzzle or input("Puzzle maxrows is: " + str(puzzle["maxrows"])  + " | Change? ") == "y":
         puzzle["maxrows"] = int(input("Enter puzzle maxrows: "))
 
     if "unlocked-gates" not in puzzle or input("Puzzle unlocked gates is:\n" + str(puzzle["unlocked-gates"])  + "\nChange? ") == "y":

@@ -1,36 +1,52 @@
 {
-  "name": "X Gate Part 2",
-  "info": "Use the x gate to end in state |0>",
-  "unlocked-gates": [["x"]],
-  "allowcontrol": false,
-  "allowparams": false,
-  "minrows": 1,
-  "maxrows": 1,
-  "circuit": {
-    "rows": [
-      {
-        "gates": [
-          {
-            "type": "x"
-          }
+    "name": "Multiple Qubits",
+    "info": "Use x gates to put each qubit in the correct state.",
+    "unlocked-gates": [
+        [
+            "x"
         ]
-      }
-    ]
-  },
-
-  "validation-mode": "statevector",
-  "validation-circuit": {
-    "rows": [
-      {
-        "gates": [
-          {
-            "type": "x"
-          },
-          {
-            "type": "x"
-          }
+    ],
+    "allowcontrol": false,
+    "allowparams": false,
+    "minrows": 3,
+    "maxrows": 3,
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            },
+            {
+                "gates": []
+            }
         ]
-      }
-    ]
-  }
+    },
+    "validation-mode": "statevector",
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "empty"
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "x"
+                    }
+                ]
+            },
+            {
+                "gates": [
+                    {
+                        "type": "x"
+                    }
+                ]
+            }
+        ]
+    }
 }
