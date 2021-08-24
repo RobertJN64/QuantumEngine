@@ -59,7 +59,7 @@ defaultgates = [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]]
 
 def editor(circuitjson, title="Custom Circuit Render", gates=None,
            minrows=1, maxrows=50, allowcontrol = True, allowparams = True, ispuzzle=False,
-           validator:PuzzleValidator=None):
+           validator:PuzzleValidator=None, infobox=""):
     global editorfig
 
     if gates is None:
@@ -71,7 +71,12 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
     refactorJSON(circuitjson)
     hand = ""
     handmode = ClickMode.Empty
-    currentmode = UIMode.Main
+
+    if infobox != "":
+        currentmode = UIMode.InfoBoxOpen
+    else:
+        currentmode = UIMode.Main
+
     parambox = TextInput()
     screen = PygameTools.createPygameWindow()
     done = False
@@ -144,6 +149,11 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
         elif currentmode == UIMode.CompareStatevectorTargetBoxOpen:
             tlx, tly = Render.drawStatevector(screen, svimg)
             Render.blitImageCommand(screen, "close.png", tlx - config.smallImageSize, tly, config.smallImageSize, "close")
+
+        elif currentmode == UIMode.InfoBoxOpen:
+            tlx, tly = Render.textBox(screen, infobox)
+            Render.blitImageCommand(screen, "close.png", tlx - config.smallImageSize, tly, config.smallImageSize,
+                                    "close")
 
         events = pygame.event.get()
         for event in events:
@@ -301,6 +311,13 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
                                     currentmode = UIMode.Main
                                 elif clickLoc.target == "close":
                                     currentmode = UIMode.Main
+
+                elif event.button == 1 and currentmode == UIMode.InfoBoxOpen:
+                    for clickLoc in clickLocations:
+                        if clickLoc.checkClick(x, y):
+                            handmode = clickLoc.mode
+                            if clickLoc.mode == ClickMode.Command and clickLoc.target == "close":
+                                currentmode = UIMode.Main
 
                 elif event.button == 3 and currentmode == UIMode.Main:
                     for clickLoc in clickLocations:

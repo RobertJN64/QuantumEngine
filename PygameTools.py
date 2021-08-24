@@ -71,7 +71,8 @@ class UIMode:
     ParamBoxOpen = 1,
     ControlWireConfig = 2,
     BlochSphereTargetBoxOpen = 3,
-    CompareStatevectorTargetBoxOpen = 4
+    CompareStatevectorTargetBoxOpen = 4,
+    InfoBoxOpen = 5
 
 class ClickLocation:
     def __init__(self, x, y, w, h, target, mode):
@@ -92,8 +93,15 @@ def createPygameWindow():
     screen = pygame.display.set_mode((config.screenW, config.screenH), pygame.RESIZABLE)
     return screen
 
-def displayText(screen, text, x, y, size, color, mode="center"):
-    font = pygame.font.Font('freesansbold.ttf', size)
+def displayText(screen, text, x, y, size, color, mode="center", font=None):
+    if font is None:
+        font = pygame.font.Font('freesansbold.ttf', size)
+    elif font == "monospaced":
+        font = pygame.font.SysFont("monospace", size)
+    else:
+        warnings.warn("Font: " + str(font) + " not found.")
+        raise InternalCommandException
+
     textSurface = font.render(text, True, color)
     textRect = textSurface.get_rect()
     if mode == "center":

@@ -93,16 +93,13 @@ def loadPuzzle(fname):
         raise InternalCommandException
 
     validatePuzzle(puzzlejson)
-    print(puzzlejson["info"]) #TODO - info box
-    save, circuitjson = CFR.editor(puzzlejson["circuit"],
-               title=puzzlejson["name"],
-               ispuzzle=True,
-               validator=PuzzleValidator(puzzlejson, puzzlejson.get("tolerance", 0.1)),
-               gates=puzzlejson["unlocked-gates"],
-               minrows=puzzlejson["minrows"],
-               maxrows=puzzlejson["maxrows"],
-               allowcontrol=puzzlejson["allowcontrol"],
-               allowparams=puzzlejson["allowparams"])
+
+    save, circuitjson = CFR.editor(puzzlejson["circuit"], title=puzzlejson["name"], ispuzzle=True,
+                                   validator=PuzzleValidator(puzzlejson, puzzlejson.get("tolerance", 0.1)),
+                                   gates=puzzlejson["unlocked-gates"], minrows=puzzlejson["minrows"],
+                                   maxrows=puzzlejson["maxrows"],
+                                   allowcontrol=puzzlejson["allowcontrol"], allowparams=puzzlejson["allowparams"],
+                                   infobox=puzzlejson["info"])
 
     validateJSON(circuitjson)
     if save:

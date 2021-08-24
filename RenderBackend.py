@@ -5,6 +5,7 @@ import json
 from PygameTools import config, ClickMode, ClickLocation
 import PygameTools
 from CircuitJSONTools import validgates
+from textwrap import wrap
 
 class WarningMessage:
     def __init__(self):
@@ -333,3 +334,16 @@ def displayCommandImages(screen, ispuzzle):
                          "check")
         blitImageCommand(screen, "target.png", x, (config.smallImageSize + 10) * (i + 3) + 5, config.smallImageSize,
                          "target")
+
+def textBox(screen, text):
+    t = wrap(text, 50)
+    ypos = config.screenH/2 - len(t) * 10
+    pygame.draw.rect(screen, (255,255,255),
+                     (config.screenW/2 - 250, config.screenH/2 -len(t)*10 - 10, 500, len(t)*20 + 50))
+    pygame.draw.rect(screen, (0, 0, 0),
+                     (config.screenW/2 - 250, config.screenH/2 -len(t)*10 - 10, 500, len(t)*20 + 50), width=3)
+    for item in t:
+        ypos += 20
+        PygameTools.displayText(screen, item, config.screenW/2, ypos, 15, (0,0,0), font="monospaced")
+
+    return config.screenW/2 + 250, config.screenH/2 - len(t) * 10 - 10
