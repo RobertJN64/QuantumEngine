@@ -1,0 +1,36 @@
+{
+    "name": "Z Gate",
+    "info": "Use the z gate to change the phase of the qubit. The qubit is already in superposition.",
+    "allowcontrol": false,
+    "allowparams": false,
+    "minrows": 1,
+    "maxrows": 1,
+    "unlocked-gates": [
+        [
+            "h",
+            "z"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "h"
+                    },
+                    {
+                        "type": "z"
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "statevector"
+}

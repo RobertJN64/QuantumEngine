@@ -1,12 +1,12 @@
 import json
 import CircuitFileRenderer as CFR
+import PygameTools
 from errors import InternalCommandException
 from CircuitJSONTools import validateJSON, assembleCircuit, saveJSON
 from QCircuitSimulator import simulate
 from qiskit.quantum_info import Statevector
 import warnings
-
-#TODO - multiline results broke graph
+import pygame
 
 def validatePuzzle(puzzlejson):
     for key in ["name", "info", "circuit", "unlocked-gates", "minrows", "maxrows", "allowcontrol", "allowparams",
@@ -86,7 +86,7 @@ class PuzzleValidator:
         return self.validationFunction(circuit, assembleCircuit(self.correctcircuitjson), self.tolerance)
 #endregion
 
-def loadPuzzle(fname):
+def loadPuzzle(fname, screen=None):
     try:
         with open("puzzles/" + fname + ".json") as f:
             puzzlejson = json.load(f)
@@ -101,7 +101,7 @@ def loadPuzzle(fname):
                                    gates=puzzlejson["unlocked-gates"], minrows=puzzlejson["minrows"],
                                    maxrows=puzzlejson["maxrows"],
                                    allowcontrol=puzzlejson["allowcontrol"], allowparams=puzzlejson["allowparams"],
-                                   infobox=puzzlejson["info"])
+                                   infobox=puzzlejson["info"], startscreen=screen)
 
     validateJSON(circuitjson)
     if save:
@@ -122,8 +122,10 @@ def loadPuzzleset(fname):
             warnings.warn("Puzzle <" + str(puzzle) + "> file not found.")
             raise InternalCommandException
 
+    screen = PygameTools.createPygameWindow()
     for puzzle in puzzleset:
-        loadPuzzle(puzzle)
+        loadPuzzle(puzzle, screen=screen)
+    pygame.display.quit()
 
 def editPuzzle(fname):
     try:

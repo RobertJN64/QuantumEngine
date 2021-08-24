@@ -1,0 +1,35 @@
+{
+    "name": "H Gate Interference",
+    "info": "What happens when 2 H Gates are applied to the same qubit?",
+    "allowcontrol": false,
+    "allowparams": false,
+    "minrows": 1,
+    "maxrows": 1,
+    "unlocked-gates": [
+        [
+            "h"
+        ]
+    ],
+    "validation-circuit": {
+        "rows": [
+            {
+                "gates": [
+                    {
+                        "type": "h"
+                    },
+                    {
+                        "type": "h"
+                    }
+                ]
+            }
+        ]
+    },
+    "circuit": {
+        "rows": [
+            {
+                "gates": []
+            }
+        ]
+    },
+    "validation-mode": "statevector"
+}

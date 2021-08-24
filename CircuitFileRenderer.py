@@ -59,7 +59,7 @@ defaultgates = [["h", "x", "y", "z", "u"], ["m", "swap", "barrier", "reset"]]
 
 def editor(circuitjson, title="Custom Circuit Render", gates=None,
            minrows=1, maxrows=50, allowcontrol = True, allowparams = True, ispuzzle=False,
-           validator:PuzzleValidator=None, infobox=""):
+           validator:PuzzleValidator=None, infobox="", startscreen=None):
     global editorfig
 
     if gates is None:
@@ -78,7 +78,11 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
         currentmode = UIMode.Main
 
     parambox = TextInput()
-    screen = PygameTools.createPygameWindow()
+    if startscreen is None:
+        screen = PygameTools.createPygameWindow()
+    else:
+        screen = startscreen
+
     done = False
     save = False
     clock = pygame.time.Clock()
@@ -94,6 +98,8 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
     if allowcontrol:
         tools.append("control")
     tools.append("delete")
+
+    pygame.event.pump() #stops clicks from carrying over...
 
     while not done:
         clickLocations.clear()
@@ -424,7 +430,8 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
         # clock.tick() #for fps testing
         warningMessage.tick()
 
-    pygame.display.quit()
+    if startscreen is None:
+        pygame.display.quit()
     pyplot.ioff()
     pyplot.show()
     return save, circuitjson
