@@ -1,6 +1,6 @@
 {
-    "name": "X Gate Parameters",
-    "info": "Right click on the xgate to add a parameter. Parameters specify the amount to rotate around the axis on the Bloch Sphere. Set the parameter to 90.",
+    "name": "Superpoisition Probabilities",
+    "info": "Using parameters, the probability of ending in certain states can be manipulated. The Qubit is currently set to a 25% change of being 1. Set it to a 75% chance.",
     "allowcontrol": false,
     "allowparams": true,
     "minrows": 1,
@@ -17,7 +17,7 @@
                     {
                         "type": "rx",
                         "params": [
-                            90.0
+                            120.0
                         ]
                     }
                 ]
@@ -29,11 +29,15 @@
             {
                 "gates": [
                     {
-                        "type": "x"
+                        "type": "rx",
+                        "params": [
+                            60.0
+                        ]
                     }
                 ]
             }
         ]
     },
-    "validation-mode": "statevector"
+    "validation-mode": "results",
+    "tolerance": 0.1
 }

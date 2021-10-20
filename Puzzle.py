@@ -117,7 +117,8 @@ def loadPuzzleset(fname):
 
     for puzzle in puzzleset:
         try:
-            open("puzzles/" + puzzle + ".json")
+            with open("puzzles/" + puzzle + ".json") as f:
+                f.readlines()
         except FileNotFoundError:
             warnings.warn("Puzzle <" + str(puzzle) + "> file not found.")
             raise InternalCommandException

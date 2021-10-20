@@ -100,6 +100,7 @@ def editor(circuitjson, title="Custom Circuit Render", gates=None,
     tools.append("delete")
 
     pygame.event.pump() #stops clicks from carrying over...
+    warningMessage.timer = 0 #stops message from carrying over
 
     while not done:
         clickLocations.clear()

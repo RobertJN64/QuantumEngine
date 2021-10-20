@@ -8,5 +8,8 @@
   "ygate",
   "ygateparam",
   "superposition",
-  "superposition2"
+  "probabilities",
+  "superposition2",
+  "interference",
+  "zgate"
 ]

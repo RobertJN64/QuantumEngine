@@ -28,7 +28,11 @@
     "circuit": {
         "rows": [
             {
-                "gates": []
+                "gates": [
+                    {
+                        "type": "h"
+                    }
+                ]
             }
         ]
     },

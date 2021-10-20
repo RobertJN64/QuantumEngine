@@ -25,6 +25,9 @@ ygateparam
 superposition
   This puzzle uses an xgate to put the circuit in superposition.
 
+probabilities
+  This puzzle connects superposition and ending probabilities.
+
 superposition2
   This puzzle introduces the hgate and connects it to superposition.
 
