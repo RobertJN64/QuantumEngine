@@ -10,7 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-#Modified from original to allow for multigate vis
+# THIS FILE WAS MODIFIED IN 2021 by Robert Nies to allow for some custom visualizations
 
 """
 Visualization function for animation of state transitions by applying gates to single qubit.
